@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Models\Semester; // <-- Impor Semester
+use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
@@ -64,4 +65,23 @@ class SettingsController extends Controller
 
         return response()->json(['message' => 'Password berhasil diubah.']);
     }
+    
+    //* Memperbarui profil (nama & email) pengguna yang sedang login.
+    
+    // public function updateProfile(Request $request)
+    // {
+    //     $user = Auth::user();
+
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         // Pastikan email unik, tapi abaikan email milik user saat ini
+    //         'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+    //     ]);
+
+    //     $user->update($validated);
+
+    //     // Kembalikan data user yang sudah diperbarui
+    //     return response()->json($user);
+    // }
+
 }

@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\GradeType;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TeacherController extends Controller
 {
     public function dashboardSummary()
     {
-        $teacher = Auth::user();
+        $teacher = Auth::user()->load(['subjects', 'teachingClasses']);
 
         // Ambil ID semester aktif dari settings
         $activeSemesterSetting = Setting::where('key', 'active_semester_id')->first();
@@ -56,12 +58,18 @@ class TeacherController extends Controller
         return response()->json([
             'active_semester_name' => $activeSemesterName,
             'stats' => [
-                'subjects_taught' => $subjectsTaught,
+                'subjects_taught' => $teacher->subjects->count(),
                 'total_students' => $totalStudents,
                 'average_score' => number_format((float)$averageScore, 2),
             ],
-            'top_students' => $topStudents
+            'top_students' => $topStudents,
+            // PASTIKAN BAGIAN INI ADA DI DALAM RESPON ANDA
+            'details' => [
+                'subjects' => $teacher->subjects,
+                'classes' => $teacher->teachingClasses,
+            ]
         ]);
+
     }
 
     public function getGradeInputData()
@@ -169,8 +177,63 @@ class TeacherController extends Controller
 
         return $grades;
 
-        
     }
+
+    public function getAiRecommendation(Request $request)
+    {
+        $validated = $request->validate([
+            'assignment_file' => 'required|file|mimes:txt,pdf,docx|max:2048', // Batasi tipe & ukuran file
+            'criteria' => 'required|string|max:1000',
+        ]);
+
+        try {
+            // Baca konten file (contoh sederhana untuk file .txt)
+            $fileContent = file_get_contents($validated['assignment_file']->getRealPath());
+
+            $apiKey = env('GEMINI_API_KEY');
+            if (!$apiKey) {
+                return response()->json(['message' => 'API Key untuk layanan AI belum diatur.'], 500);
+            }
+
+            // Buat prompt untuk AI
+            $prompt = "Anda adalah asisten penilai akademik. Berdasarkan kriteria penilaian dan konten tugas berikut, berikan rekomendasi nilai dalam format JSON.\n\n" .
+                      "Kriteria Penilaian:\n" . $validated['criteria'] . "\n\n" .
+                      "Konten Tugas Murid:\n" . $fileContent . "\n\n" .
+                      "Format JSON yang harus Anda kembalikan adalah: {\"recommended_score\": Angka (0-100), \"reasoning\": [\"poin alasan 1\", \"poin alasan 2\", \"poin alasan 3\"]}";
+            
+            // Panggil API Google Gemini
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={$apiKey}", [
+                'contents' => [
+                    ['parts' => [['text' => $prompt]]]
+                ]
+            ]);
+
+            if ($response->failed()) {
+                Log::error('AI API request failed', ['response' => $response->body()]);
+                return response()->json(['message' => 'Gagal berkomunikasi dengan layanan AI.'], 500);
+            }
+
+            // Ekstrak teks dari respons AI
+            $aiTextResponse = $response->json('candidates.0.content.parts.0.text');
+            // Bersihkan teks untuk memastikan itu adalah JSON yang valid
+            $jsonText = trim(str_replace(['```json', '```'], '', $aiTextResponse));
+            $aiResult = json_decode($jsonText, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                 Log::error('Failed to decode AI JSON response', ['raw_text' => $jsonText]);
+                return response()->json(['message' => 'Gagal memproses respons dari AI.'], 500);
+            }
+
+            return response()->json($aiResult);
+
+        } catch (\Exception $e) {
+            Log::error('AI Recommendation Error', ['message' => $e->getMessage()]);
+            return response()->json(['message' => 'Terjadi kesalahan internal pada server.'], 500);
+        }
+    }
+
 
 
 

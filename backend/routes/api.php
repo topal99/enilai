@@ -43,8 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rute untuk halaman kelola guru & murid
         Route::get('/teachers', [AdminController::class, 'getTeachers']);
         Route::get('/students-by-class', [AdminController::class, 'getStudentsByClass']);
-        Route::get('/classes-all', [ClassController::class, 'getAllClasses']); // <-- TAMBAHKAN INI
-        Route::get('/subjects-all', [SubjectController::class, 'getAllSubjects']); // <-- TAMBAHKAN INI
+        Route::get('/classes-all', [ClassController::class, 'getAllClasses']);
+        Route::get('/subjects-all', [SubjectController::class, 'getAllSubjects']);
         Route::get('/homeroom-available-classes', [ClassController::class, 'getAvailableHomeroomClasses']);
 
         // Rute CRUD menggunakan apiResource
@@ -63,7 +63,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/grade-input-data', [TeacherController::class, 'getGradeInputData']);
         Route::get('/students-by-class', [TeacherController::class, 'getStudentsByClass']);
         Route::post('/grades/bulk-store', [TeacherController::class, 'bulkStoreGrades']);
-        Route::get('/grades', [TeacherController::class, 'getGrades']); // <-- TAMBAHKAN INI
+        Route::get('/grades', [TeacherController::class, 'getGrades']); 
+        Route::post('/ai-recommendation', [TeacherController::class, 'getAiRecommendation']); 
+        Route::post('/settings/change-password', [SettingsController::class, 'changePassword']);
 
     });
 
