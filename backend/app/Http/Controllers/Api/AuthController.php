@@ -41,27 +41,24 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // Coba otentikasi user
         if (!Auth::attempt($request->only('email', 'password'))) {
-            // Jika gagal, kirim response error
-            return response()->json([
-                'message' => 'Invalid login details'
-            ], 401);
+            return response()->json(['message' => 'Detail login tidak valid'], 401);
         }
 
-        // Jika berhasil, ambil data user
-        $user = User::with('role')->where('email', $request['email'])->firstOrFail();
+        // KOREKSI UTAMA:
+        // Ambil data user dan secara eksplisit muat relasi 'role' dengannya.
+        // Ini memastikan data peran SELALU disertakan dalam respons.
+        $user = User::where('email', $request['email'])->with('role')->firstOrFail();
 
-        // Buat token
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Kirim response berisi token dan data user
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user
+            'user' => $user // Sekarang $user dijamin memiliki data role
         ]);
     }
+
 
     // Fungsi untuk Logout
     public function logout(Request $request)

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\SubjectController;
 use App\Http\Controllers\Api\Admin\ClassController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\Admin\HomeroomController; 
+use App\Http\Controllers\Api\Teacher\TeacherController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +53,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('subjects', SubjectController::class);
         Route::apiResource('classes', ClassController::class);
         Route::apiResource('homerooms', HomeroomController::class);
+    });
+
+    // ===================================
+    // GRUP RUTE KHUSUS GURU
+    // ===================================
+    Route::middleware('role:guru')->prefix('teacher')->group(function () {
+        Route::get('/dashboard-summary', [TeacherController::class, 'dashboardSummary']);
+        Route::get('/grade-input-data', [TeacherController::class, 'getGradeInputData']);
+        Route::get('/students-by-class', [TeacherController::class, 'getStudentsByClass']);
+        Route::post('/grades/bulk-store', [TeacherController::class, 'bulkStoreGrades']);
+        Route::get('/grades', [TeacherController::class, 'getGrades']); // <-- TAMBAHKAN INI
 
     });
+
 });

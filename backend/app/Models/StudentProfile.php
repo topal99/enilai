@@ -33,4 +33,6 @@ class StudentProfile extends Model
     {
         return $this->belongsTo(ClassModel::class);
     }
+
+    
 }
