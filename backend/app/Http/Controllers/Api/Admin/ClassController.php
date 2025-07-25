@@ -86,12 +86,14 @@ class ClassController extends Controller
      */
     public function getAllClasses(Request $request)
     {
-        $query = ClassModel::query();
+        return ClassModel::orderBy('level')->orderBy('name')->get();
+    }
 
-        // Ambil hanya kelas yang belum punya wali kelas
+    public function getAvailableHomeroomClasses(Request $request)
+    {
+        $query = ClassModel::query();
         $query->whereNull('homeroom_teacher_id');
 
-        // Jika sedang mengedit, sertakan juga kelas yang sudah diampu oleh wali kelas tersebut
         if ($request->has('editing_user_id')) {
             $query->orWhere('homeroom_teacher_id', $request->editing_user_id);
         }
@@ -99,5 +101,4 @@ class ClassController extends Controller
         return $query->latest()->get();
     }
 
-    
 }

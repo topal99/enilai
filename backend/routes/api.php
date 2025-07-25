@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/students-by-class', [AdminController::class, 'getStudentsByClass']);
         Route::get('/classes-all', [ClassController::class, 'getAllClasses']); // <-- TAMBAHKAN INI
         Route::get('/subjects-all', [SubjectController::class, 'getAllSubjects']); // <-- TAMBAHKAN INI
+        Route::get('/homeroom-available-classes', [ClassController::class, 'getAvailableHomeroomClasses']);
 
         // Rute CRUD menggunakan apiResource
         Route::apiResource('users', AdminController::class);
