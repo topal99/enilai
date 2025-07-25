@@ -44,7 +44,10 @@ class AdminController extends Controller
     // Method index() sudah benar, tidak ada perubahan.
     public function index(Request $request)
     {
-        $query = User::with('role');
+        $query = User::with('role')->whereHas('role', function ($query) {
+            $query->where('name', 'admin');
+        });
+        
         if ($request->has('search')) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
@@ -52,9 +55,9 @@ class AdminController extends Controller
                   ->orWhere('email', 'like', "%{$searchTerm}%");
             });
         }
-        if ($request->has('role_id') && $request->role_id != '') {
-            $query->where('role_id', $request->role_id);
-        }
+        // if ($request->has('role_id') && $request->role_id != '') {
+        //     $query->where('role_id', $request->role_id);
+        // }
         return $query->latest()->paginate(10);
     }
 
@@ -151,7 +154,9 @@ class AdminController extends Controller
             $user->subjects()->sync($validated['subject_ids']);
             $user->teachingClasses()->sync($validated['class_ids'] ?? []); // Gunakan sync untuk update
             $user->studentProfile()->delete();
-        } else {
+        } 
+
+        else {
             // Jika admin atau peran lain, hapus semua data peran spesifik
             $user->subjects()->detach();
             $user->teachingClasses()->detach();

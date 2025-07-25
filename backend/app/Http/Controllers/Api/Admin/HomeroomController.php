@@ -12,16 +12,27 @@ use App\Models\ClassModel;
 
 class HomeroomController extends Controller
 {
-    public function index(Request $request) 
+    public function index(Request $request) // <-- Tambahkan Request $request
     {
-        $homerooms = User::with('homeroomClasses')
+        $query = User::with('homeroomClasses')
             ->whereHas('role', function ($query) {
                 $query->where('name', 'walikelas');
-            })
-            ->latest()->paginate(10);
-            
+            });
+        
+        // KOREKSI: Tambahkan logika pencarian
+        if ($request->has('search') && $request->search != '') {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('email', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $homerooms = $query->latest()->paginate(10);
+        
         return $homerooms;
     }
+
 
     public function store(Request $request)
     {
