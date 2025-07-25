@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 // Anda bisa menambahkan ikon dari library seperti lucide-react
 // npm install lucide-react
-import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BookCheck, Settings, BookCopy, School, UserCheck, UserCog } from "lucide-react";
+import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BookCheck, Settings, BookCopy, School, UserCheck, UserCog, History, BrainCircuit } from "lucide-react";
 
 // Konfigurasi semua item menu yang mungkin ada
 const menuItems = [
@@ -16,8 +16,8 @@ const menuItems = [
   { href: "/admin/manage-classes", label: "Manajemen Kelas", icon: School, roles: ["admin"] },
   { href: "/admin/manage-teachers", label: "Manajemen Guru", icon: UserCog, roles: ["admin"] },
   { href: "/admin/manage-students", label: "Manajemen Murid", icon: UserCog, roles: ["admin"] },
-  { href: "/admin/manage-homerooms", label: "Kelola Wali Kelas", icon: UserCog, roles: ["admin"] }, 
-  { href: "/admin/users", label: "Manajemen Seluruh Pengguna", icon: Users, roles: ["admin"] },
+  { href: "/admin/manage-homerooms", label: "Manajemen Wali Kelas", icon: UserCog, roles: ["admin"] }, 
+  { href: "/admin/manage-admin", label: "Manajemen Admin", icon: UserCog, roles: ["admin"] },
   { href: "/admin/activity", label: "Monitor Aktivitas", icon: BookCheck, roles: ["admin"] },
   { href: "/admin/settings", label: "Pengaturan", icon: Settings, roles: ["admin"] },
 
@@ -27,6 +27,10 @@ const menuItems = [
   // Menu Guru
   { href: "/teacher/dashboard", label: "Dashboard Guru", icon: LayoutDashboard, roles: ["guru"] },
   { href: "/teacher/grade-input", label: "Input Nilai", icon: ClipboardCheck, roles: ["guru"] },
+  { href: "/teacher/grades", label: "Daftar Nilai", icon: History, roles: ["guru"] }, // <-- TAMBAHKAN INI
+  { href: "/teacher/recommendation", label: "Rekomendasi AI", icon: BrainCircuit, roles: ["guru"] }, // <-- TAMBAHKAN INI
+  { href: "/teacher/settings", label: "Pengaturan Akun", icon: Settings, roles: ["guru"] }, // <-- TAMBAHKAN INI
+
   // Tambahkan menu untuk walikelas dan peran lain di sini
 ];
 

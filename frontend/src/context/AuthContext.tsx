@@ -1,5 +1,3 @@
-// File: context/AuthContext.tsx
-
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -17,7 +15,7 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: Role; // Tipe untuk role diubah menjadi objek
+  role: Role;
 }
 
 interface AuthContextType {
@@ -26,7 +24,9 @@ interface AuthContextType {
   login: (user: User, token: string) => void;
   logout: () => void;
   isLoading: boolean;
-  activeSemester: string | null; // <-- Tambahkan ini
+  activeSemester: string | null;
+  activeSemesterId: number | null; // <-- Tambahkan ini
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,36 +35,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSemester, setActiveSemester] = useState<string | null>(null);
+  const [activeSemesterId, setActiveSemesterId] = useState<number | null>(null); // <-- Tambahkan ini
   const router = useRouter();
-  const [activeSemester, setActiveSemester] = useState<string | null>(null); // <-- Tambahkan state ini
 
   useEffect(() => {
-      const storedToken = localStorage.getItem('auth_token');
-      const storedUser = localStorage.getItem('user_data');
+    const storedToken = localStorage.getItem('auth_token');
+    const storedUser = localStorage.getItem('user_data');
 
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-
-        // Ambil juga pengaturan semester
-        api.get('/settings')
-          .then(response => {
-            setActiveSemester(response.data.active_semester_name);
-          })
-          .catch(err => console.error("Gagal memuat semester aktif", err));
-      }
-      setIsLoading(false);
-    }, []);
-
-  const login = (userData: User, userToken: string) => {
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+      
+         api.get('/settings')
+        .then(response => {
+          setActiveSemester(response.data.active_semester_name);
+          setActiveSemesterId(response.data.active_semester_id); // <-- Tambahkan ini
+        });
+    }
+    setIsLoading(false);
+  }, []);
+  
+const login = (userData: User, userToken: string) => {
     setUser(userData);
     setToken(userToken);
-    
     localStorage.setItem('user_data', JSON.stringify(userData));
     localStorage.setItem('auth_token', userToken);
     
-    // Logika switch diubah menggunakan role.name
-    switch (userData.role.name) {
+    // =================================================================
+    // TAMBAHKAN BARIS INI UNTUK DEBUGGING
+    // =================================================================
+
+    const roleName = userData.role.name.toLowerCase().trim();
+
+    switch (roleName) {
       case 'admin':
         router.push('/admin/dashboard');
         break;
@@ -78,7 +82,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push('/student/dashboard');
         break;
       default:
-        router.push('/login');
+        // Jika tidak cocok sama sekali, arahkan ke halaman utama
+        router.push('/');
     }
   };
 
@@ -91,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading, activeSemester }}> {/* <-- Tambahkan activeSemester */}
+    <AuthContext.Provider value={{ user, token, login, logout, isLoading, activeSemester, activeSemesterId }}>
       {children}
     </AuthContext.Provider>
   );

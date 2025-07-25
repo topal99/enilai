@@ -10,20 +10,29 @@ export const useRedirectIfAuthenticated = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Tunggu sampai status loading selesai
-    if (!isLoading && user) {
-      // Jika ada user, arahkan ke dashboard sesuai perannya
-      switch (user.role.name) {
+    // Jangan lakukan apa-apa jika masih loading
+    if (isLoading) return;
+
+    // Jika loading selesai DAN ada user, lakukan redirect
+    if (user) {
+      const roleName = user.role.name.toLowerCase().trim();
+      
+      switch (roleName) {
         case 'admin':
           router.push('/admin/dashboard');
+          break;
+        case 'guru':
+          router.push('/teacher/dashboard');
+          break;
+        case 'walikelas':
+          router.push('/homeroom/dashboard');
           break;
         case 'murid':
           router.push('/student/dashboard');
           break;
-        // Tambahkan case untuk peran lain jika perlu
         default:
-          router.push('/'); // Fallback ke halaman utama
+          router.push('/'); // Fallback
       }
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router]); // Hook ini akan berjalan setiap kali user atau isLoading berubah
 };

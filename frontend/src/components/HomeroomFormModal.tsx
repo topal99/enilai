@@ -39,13 +39,15 @@ export default function HomeroomFormModal({ isOpen, onClose, onSuccess, userToEd
   // Ambil daftar kelas yang tersedia
   useEffect(() => {
     if (isOpen) {
-      let apiUrl = "/admin/classes-all";
+      // KOREKSI: Panggil API khusus untuk wali kelas
+      let apiUrl = "/admin/homeroom-available-classes"; 
       if (isEditMode && userToEdit) {
         apiUrl += `?editing_user_id=${userToEdit.id}`;
       }
       api.get(apiUrl).then(res => setClasses(res.data));
     }
-  }, [isOpen, isEditMode, userToEdit]);
+}, [isOpen, isEditMode, userToEdit]);
+
 
   // BARU: Kelompokkan kelas berdasarkan tingkat (level)
   const classesByLevel = useMemo(() => {
