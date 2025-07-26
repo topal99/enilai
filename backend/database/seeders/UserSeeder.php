@@ -26,28 +26,12 @@ class UserSeeder extends Seeder
             'role_id' => $adminRole->id,
         ]);
 
-        // Buat Guru
-        User::create([
-            'name' => 'Guru User',
-            'email' => 'guru@gmail.com',
-            'password' => Hash::make('password'),
-            'role_id' => $guruRole->id,
-        ]);
-
         // Buat Wali Kelas
         User::create([
             'name' => 'Wali Kelas User',
             'email' => 'walikelas@gmail.com',
             'password' => Hash::make('password'),
             'role_id' => $walikelasRole->id,
-        ]);
-
-        // Buat Murid
-        User::create([
-            'name' => 'Murid User',
-            'email' => 'murid@gmail.com',
-            'password' => Hash::make('password'),
-            'role_id' => $muridRole->id,
         ]);
     }
 }

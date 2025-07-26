@@ -87,7 +87,7 @@ export default function GradeInputPage() {
           <CardTitle>Filter Data Penilaian</CardTitle>
           <p className="text-muted-foreground">Semester Aktif: <strong>{activeSemester || 'Belum Diatur'}</strong></p>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Select onValueChange={value => setFilters(f => ({...f, classId: value}))}>
             <SelectTrigger><SelectValue placeholder="Pilih Kelas..." /></SelectTrigger>
             <SelectContent>{masterData?.classes.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.level}-{c.name}</SelectItem>)}</SelectContent>

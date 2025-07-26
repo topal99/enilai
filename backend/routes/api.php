@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\Admin\SubjectController;
 use App\Http\Controllers\Api\Admin\ClassController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\Admin\HomeroomController; 
-use App\Http\Controllers\Api\Teacher\TeacherController;
+use App\Http\Controllers\Api\Teacher\TeacherController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/roles', [RoleController::class, 'index']);
     Route::get('/settings', [SettingsController::class, 'getSettings']);
     Route::post('/settings/change-password', [SettingsController::class, 'changePassword']);
+    Route::get('/classes-all', [ClassController::class, 'getAllClasses']);
+    Route::get('/subjects-all', [SubjectController::class, 'getAllSubjects']);
+    
 
     // ===================================
     // GRUP RUTE KHUSUS ADMIN
@@ -66,6 +69,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/grades', [TeacherController::class, 'getGrades']); 
         Route::post('/ai-recommendation', [TeacherController::class, 'getAiRecommendation']); 
         Route::post('/settings/change-password', [SettingsController::class, 'changePassword']);
+        Route::post('/grades/export', [TeacherController::class, 'exportGrades']); 
+        Route::post('/attendances/bulk-store', [TeacherController::class, 'bulkStoreAttendances']); 
+        Route::get('/attendances', [TeacherController::class, 'getAttendances']); // <-- TAMBAHKAN INI
+        Route::get('/attendances/summary', [TeacherController::class, 'getAttendanceSummary']); // <-- TAMBAHKAN INI
+        Route::get('/attendance/status', [TeacherController::class, 'getAttendanceStatus']); // <-- TAMBAHKAN INI
 
     });
 

@@ -12,6 +12,10 @@ use App\Models\GradeType;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel; 
+use App\Exports\GradesExport;     
+use App\Models\Attendance;
+use App\Models\StudentProfile;
 
 class TeacherController extends Controller
 {
@@ -234,7 +238,149 @@ class TeacherController extends Controller
         }
     }
 
+    public function exportGrades(Request $request)
+    {
+        // Logika query ini SAMA PERSIS dengan method getGrades,
+        // namun tanpa paginasi (.get() bukan .paginate())
+        $teacher = Auth::user();
+        $activeSemesterId = Setting::where('key', 'active_semester_id')->first()?->value;
+
+        $query = Grade::with([/* ... relasi ... */])
+            ->where('teacher_id', $teacher->id)
+            ->where('semester_id', $activeSemesterId);
+        
+        $query->when($request->filled('class_id'), function ($q) use ($request) { /* ... */ });
+        $query->when($request->filled('subject_id'), function ($q) use ($request) { /* ... */ });
+        $query->when($request->filled('grade_type_id'), function ($q) use ($request) { /* ... */ });
+        $query->when($request->filled('exam_date'), function ($q) use ($request) { /* ... */ });
+
+        $grades = $query->latest('exam_date')->get();
+
+        // Buat nama file yang dinamis
+        $fileName = 'daftar_nilai_' . now()->format('Y-m-d_H-i') . '.xlsx';
+
+        // Panggil library Excel untuk men-download file
+        return Excel::download(new GradesExport($grades), $fileName);
+    }
+
+    public function getAttendances(Request $request)
+    {
+        $validated = $request->validate([
+            'class_model_id' => 'required|exists:class_models,id',
+            'attendance_date' => 'required|date',
+        ]);
+
+        $attendances = Attendance::where('class_model_id', $validated['class_model_id'])
+            ->where('attendance_date', $validated['attendance_date'])
+            ->get();
+        
+        return response()->json($attendances);
+    }
+
+    // Method untuk menyimpan absensi (tanpa subject_id)
+    public function bulkStoreAttendances(Request $request)
+    {
+        $validated = $request->validate([
+            'semester_id' => 'required|exists:semesters,id',
+            'class_model_id' => 'required|exists:class_models,id',
+            'attendance_date' => 'required|date',
+            'attendances' => 'required|array|min:1',
+            'attendances.*.student_user_id' => 'required|exists:users,id',
+            'attendances.*.status' => 'required|in:hadir,sakit,izin,alpa',
+            'attendances.*.notes' => 'nullable|string|max:255',
+        ]);
+
+        $teacherId = Auth::id();
+
+        foreach ($validated['attendances'] as $attData) {
+            $studentProfile = User::find($attData['student_user_id'])->studentProfile;
+            
+            if ($studentProfile) {
+                Attendance::updateOrCreate(
+                    [
+                        'student_id' => $studentProfile->id,
+                        'attendance_date' => $validated['attendance_date'],
+                        'class_model_id' => $validated['class_model_id'],
+                    ],
+                    [
+                        'teacher_id' => $teacherId,
+                        'semester_id' => $validated['semester_id'],
+                        'status' => $attData['status'],
+                        'notes' => $attData['notes'],
+                    ]
+                );
+            }
+        }
+        return response()->json(['message' => 'Absensi berhasil disimpan.']);
+    }
 
 
+    public function getAttendanceSummary(Request $request)
+    {
+        $validated = $request->validate([
+            'class_model_id' => 'required|exists:class_models,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $students = StudentProfile::with('user:id,name')
+            ->where('class_model_id', $validated['class_model_id'])
+            ->withCount([
+                'attendances as hadir_count' => function ($query) use ($validated) {
+                    $query->where('status', 'hadir')
+                          ->whereBetween('attendance_date', [$validated['start_date'], $validated['end_date']]);
+                },
+                'attendances as sakit_count' => function ($query) use ($validated) {
+                    $query->where('status', 'sakit')
+                          ->whereBetween('attendance_date', [$validated['start_date'], $validated['end_date']]);
+                },
+                'attendances as izin_count' => function ($query) use ($validated) {
+                    $query->where('status', 'izin')
+                          ->whereBetween('attendance_date', [$validated['start_date'], $validated['end_date']]);
+                },
+                'attendances as alpa_count' => function ($query) use ($validated) {
+                    $query->where('status', 'alpa')
+                          ->whereBetween('attendance_date', [$validated['start_date'], $validated['end_date']]);
+                },
+            ])
+            ->get();
+            
+        // Kalkulasi total dan persentase kehadiran
+        $summary = $students->map(function ($student) {
+            $total_days = $student->hadir_count + $student->sakit_count + $student->izin_count + $student->alpa_count;
+            $percentage = $total_days > 0 ? ($student->hadir_count / $total_days) * 100 : 0;
+            
+            $student->total_days = $total_days;
+            $student->percentage = round($percentage, 2);
+            return $student;
+        });
+
+        return response()->json($summary);
+    }
+
+    public function getAttendanceStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'class_model_id' => 'required|exists:class_models,id',
+        ]);
+
+        // Cek absensi untuk kelas yang dipilih PADA HARI INI
+        $attendance = Attendance::with('teacher:id,name')
+            ->where('class_model_id', $validated['class_model_id'])
+            ->whereDate('attendance_date', now())
+            ->first();
+
+        if ($attendance) {
+            return response()->json([
+                'status' => 'taken',
+                'teacher_name' => $attendance->teacher->name,
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'not_taken',
+            'teacher_name' => null,
+        ]);
+    }
 
 }

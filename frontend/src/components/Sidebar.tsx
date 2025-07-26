@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 // Anda bisa menambahkan ikon dari library seperti lucide-react
 // npm install lucide-react
-import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BookCheck, Settings, BookCopy, School, UserCheck, UserCog, History, BrainCircuit } from "lucide-react";
+import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BookCheck, Settings, BookCopy, School, UserCheck, UserCog, History, BrainCircuit, UserCheck2, FileText } from "lucide-react";
 
 // Konfigurasi semua item menu yang mungkin ada
 const menuItems = [
@@ -26,10 +26,12 @@ const menuItems = [
   { href: "/student/grades", label: "Nilai Saya", icon: GraduationCap, roles: ["murid"] },
   // Menu Guru
   { href: "/teacher/dashboard", label: "Dashboard Guru", icon: LayoutDashboard, roles: ["guru"] },
+  { href: "/teacher/attendance", label: "Absensi", icon: UserCheck2, roles: ["guru"] }, 
+  { href: "/teacher/attendance-report", label: "Laporan Absensi", icon: FileText, roles: ["guru"] }, 
   { href: "/teacher/grade-input", label: "Input Nilai", icon: ClipboardCheck, roles: ["guru"] },
-  { href: "/teacher/grades", label: "Daftar Nilai", icon: History, roles: ["guru"] }, // <-- TAMBAHKAN INI
-  { href: "/teacher/recommendation", label: "Rekomendasi AI", icon: BrainCircuit, roles: ["guru"] }, // <-- TAMBAHKAN INI
-  { href: "/teacher/settings", label: "Pengaturan Akun", icon: Settings, roles: ["guru"] }, // <-- TAMBAHKAN INI
+  { href: "/teacher/grades", label: "Daftar Nilai", icon: History, roles: ["guru"] }, 
+  { href: "/teacher/recommendation", label: "Rekomendasi AI", icon: BrainCircuit, roles: ["guru"] }, 
+  { href: "/teacher/settings", label: "Pengaturan Akun", icon: Settings, roles: ["guru"] }, 
 
   // Tambahkan menu untuk walikelas dan peran lain di sini
 ];

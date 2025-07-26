@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext"; // <-- Impor AuthProvider
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider> {/* <-- Bungkus children dengan AuthProvider */}
           {children}
+        <Toaster richColors />
         </AuthProvider>
       </body>
     </html>

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Download } from "lucide-react";
 
 // Tipe Data (tidak berubah)
 interface Grade {
@@ -47,6 +48,49 @@ export default function GradesListPage() {
   const [filters, setFilters] = useState<Filters>({ classId: "", subjectId: "", gradeTypeId: "", examDate: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isExporting, setIsExporting] = useState(false); // State baru untuk loading export
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // Panggil endpoint export dengan filter yang sedang aktif
+      const response = await api.post('/teacher/grades/export', {
+        class_id: filters.classId,
+        subject_id: filters.subjectId,
+        grade_type_id: filters.gradeTypeId,
+        exam_date: filters.examDate,
+      }, {
+        responseType: 'blob', // Penting: agar respons dianggap sebagai file
+      });
+
+      // Buat URL sementara dari file blob yang diterima
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      // Ambil nama file dari header respons jika ada, jika tidak, buat nama default
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = 'daftar-nilai.xlsx';
+      if (contentDisposition) {
+          const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (fileNameMatch.length === 2)
+              fileName = fileNameMatch[1];
+      }
+      link.setAttribute('download', fileName);
+      
+      // Klik link secara programatik untuk memulai download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Hapus link setelah selesai
+      link.parentNode?.removeChild(link);
+
+    } catch (error) {
+      console.error("Gagal mengekspor data:", error);
+      alert("Gagal mengekspor data.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     api.get('/teacher/grade-input-data').then(res => setMasterData(res.data));
@@ -108,19 +152,27 @@ export default function GradesListPage() {
           <p className="text-muted-foreground">Semester Aktif: <strong>{activeSemester || 'Belum Diatur'}</strong></p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+          <form onSubmit={handleSearch} className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
             {/* KOREKSI 5: Sederhanakan UI Filter */}
             <div className="lg:col-span-1"><Label>Kelas</Label><Select value={filters.classId} onValueChange={value => handleFilterChange('classId', value)}><SelectTrigger><SelectValue placeholder="Semua Kelas" /></SelectTrigger><SelectContent>{masterData?.classes.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.level}-{c.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="lg:col-span-1"><Label>Mata Pelajaran</Label><Select value={filters.subjectId} onValueChange={value => handleFilterChange('subjectId', value)}><SelectTrigger><SelectValue placeholder="Semua Mapel" /></SelectTrigger><SelectContent>{masterData?.subjects.map(s => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="lg:col-span-1"><Label>Jenis Ujian</Label><Select value={filters.gradeTypeId} onValueChange={value => handleFilterChange('gradeTypeId', value)}><SelectTrigger><SelectValue placeholder="Semua Jenis" /></SelectTrigger><SelectContent>{masterData?.grade_types.map(gt => <SelectItem key={gt.id} value={String(gt.id)}>{gt.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="lg:col-span-1"><Label htmlFor="exam_date">Tanggal Ujian</Label><Input id="exam_date" type="date" value={filters.examDate} onChange={e => handleFilterChange('examDate', e.target.value)} /></div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 items-end">
               <Button type="submit" className="w-full">Cari</Button>
               <Button type="button" variant="outline" onClick={resetFilters} className="w-full">Reset</Button>
             </div>
           </form>
         </CardContent>
       </Card>
+
+      {/* Tombol Ekspor */}
+      <div className="flex justify-end mt-4">
+        <Button onClick={handleExport} disabled={isExporting}>
+          <Download className="mr-2 h-4 w-4" />
+          {isExporting ? 'Mengekspor...' : 'Ekspor ke Excel'}
+        </Button>
+      </div>
 
       <div className="mt-6 rounded-md border">
         <Table>
