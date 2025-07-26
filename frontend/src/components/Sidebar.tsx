@@ -1,14 +1,18 @@
-// File: components/Sidebar.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-// Anda bisa menambahkan ikon dari library seperti lucide-react
-// npm install lucide-react
-import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BookCheck, Settings, BookCopy, School, UserCheck, UserCog, History, BrainCircuit, UserCheck2, FileText } from "lucide-react";
+import { LayoutDashboard, Users, BookCopy, School, UserCheck, UserCog, FileText, ClipboardCheck, History, BrainCircuit, Settings, UserCheck2, X, GraduationCap, BookCheck } from "lucide-react";
+import { Button } from "./ui/button";
 
-// Konfigurasi semua item menu yang mungkin ada
+// Definisikan props baru
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// Konfigurasi menu (tidak berubah)
 const menuItems = [
   // Menu Admin
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
@@ -22,10 +26,11 @@ const menuItems = [
   { href: "/admin/settings", label: "Pengaturan", icon: Settings, roles: ["admin"] },
 
   // Menu Murid
-  { href: "/student/dashboard", label: "Dashboard Murid", icon: LayoutDashboard, roles: ["murid"] },
+  { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["murid"] },
   { href: "/student/grades", label: "Nilai Saya", icon: GraduationCap, roles: ["murid"] },
+
   // Menu Guru
-  { href: "/teacher/dashboard", label: "Dashboard Guru", icon: LayoutDashboard, roles: ["guru"] },
+  { href: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["guru"] },
   { href: "/teacher/attendance", label: "Absensi", icon: UserCheck2, roles: ["guru"] }, 
   { href: "/teacher/attendance-report", label: "Laporan Absensi", icon: FileText, roles: ["guru"] }, 
   { href: "/teacher/grade-input", label: "Input Nilai", icon: ClipboardCheck, roles: ["guru"] },
@@ -33,22 +38,33 @@ const menuItems = [
   { href: "/teacher/recommendation", label: "Rekomendasi AI", icon: BrainCircuit, roles: ["guru"] }, 
   { href: "/teacher/settings", label: "Pengaturan Akun", icon: Settings, roles: ["guru"] }, 
 
-  // Tambahkan menu untuk walikelas dan peran lain di sini
+  // Menu Wali Kelas
+  { href: "/homeroom/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["walikelas"] },
+  { href: "/homeroom/report", label: "Rapor Siswa", icon: FileText, roles: ["walikelas"] },
+
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   
-  // Filter menu berdasarkan peran pengguna yang sedang login
   const accessibleMenuItems = menuItems.filter(item => 
     user?.role?.name && item.roles.includes(user.role.name)
   );
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-gray-800 text-white flex flex-col">
-      <div className="h-16 flex items-center justify-center text-2xl font-bold border-b border-gray-700">
-        E-Nilai
+    <aside className={`
+      w-64 flex-shrink-0 bg-gray-800 text-white flex flex-col
+      fixed md:relative inset-y-0 left-0 z-50
+      transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      md:translate-x-0 transition-transform duration-300 ease-in-out
+    `}>
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-700">
+        <span className="text-2xl font-bold">E-Nilai</span>
+        {/* Tombol close, hanya muncul di mobile */}
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={onClose}>
+          <X className="h-6 w-6" />
+        </Button>
       </div>
       <nav className="flex-grow p-4">
         <ul>
@@ -56,6 +72,7 @@ export default function Sidebar() {
             <li key={item.href} className="mb-2">
               <Link
                 href={item.href}
+                onClick={onClose} // Tutup sidebar saat link diklik di mobile
                 className={`flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors ${
                   pathname === item.href ? "bg-indigo-600" : ""
                 }`}

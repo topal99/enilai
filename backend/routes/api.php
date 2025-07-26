@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\ClassController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\Admin\HomeroomController; 
 use App\Http\Controllers\Api\Teacher\TeacherController; 
+use App\Http\Controllers\Api\Homeroom\WalikelasController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -74,7 +75,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/attendances', [TeacherController::class, 'getAttendances']); // <-- TAMBAHKAN INI
         Route::get('/attendances/summary', [TeacherController::class, 'getAttendanceSummary']); // <-- TAMBAHKAN INI
         Route::get('/attendance/status', [TeacherController::class, 'getAttendanceStatus']); // <-- TAMBAHKAN INI
+    });
+
+    Route::middleware('role:walikelas')->prefix('homeroom')->group(function () {
+        Route::get('/dashboard-summary', [WalikelasController::class, 'dashboardSummary']);
+        Route::get('/student/{student}/report', [WalikelasController::class, 'getStudentReport']);
+        Route::post('/report/generate-comment', [WalikelasController::class, 'generateAiComment']);
 
     });
+
 
 });
