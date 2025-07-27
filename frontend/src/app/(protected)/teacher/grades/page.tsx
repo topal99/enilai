@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Download } from "lucide-react";
+import { Download, Filter, RotateCcw, ScrollText, ScrollTextIcon } from "lucide-react";
 
 // Tipe Data (tidak berubah)
 interface Grade {
@@ -37,37 +37,33 @@ interface Filters {
   classId: string;
   subjectId: string;
   gradeTypeId: string;
-  examDate: string; // Hanya satu tanggal
+  examDate: string;
 }
 
 export default function GradesListPage() {
   const { activeSemester } = useAuth();
   const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [grades, setGrades] = useState<PaginatedGrades | null>(null);
-  // KOREKSI 3: Perbarui state awal filter
   const [filters, setFilters] = useState<Filters>({ classId: "", subjectId: "", gradeTypeId: "", examDate: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [isExporting, setIsExporting] = useState(false); // State baru untuk loading export
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // Panggil endpoint export dengan filter yang sedang aktif
       const response = await api.post('/teacher/grades/export', {
         class_id: filters.classId,
         subject_id: filters.subjectId,
         grade_type_id: filters.gradeTypeId,
         exam_date: filters.examDate,
       }, {
-        responseType: 'blob', // Penting: agar respons dianggap sebagai file
+        responseType: 'blob',
       });
 
-      // Buat URL sementara dari file blob yang diterima
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      // Ambil nama file dari header respons jika ada, jika tidak, buat nama default
       const contentDisposition = response.headers['content-disposition'];
       let fileName = 'daftar-nilai.xlsx';
       if (contentDisposition) {
@@ -77,11 +73,9 @@ export default function GradesListPage() {
       }
       link.setAttribute('download', fileName);
       
-      // Klik link secara programatik untuk memulai download
       document.body.appendChild(link);
       link.click();
       
-      // Hapus link setelah selesai
       link.parentNode?.removeChild(link);
 
     } catch (error) {
@@ -102,13 +96,12 @@ export default function GradesListPage() {
     try {
       const params = new URLSearchParams({
         page: String(page),
-        // KOREKSI 4: Kirim exam_date, bukan start_date/end_date
         exam_date: currentFilters.examDate,
         class_id: currentFilters.classId,
         subject_id: currentFilters.subjectId,
         grade_type_id: currentFilters.gradeTypeId,
       });
-      // Hapus parameter kosong
+      
       Object.keys(currentFilters).forEach(key => {
         if (!params.get(key === 'examDate' ? 'exam_date' : key)) {
           params.delete(key === 'examDate' ? 'exam_date' : key);
@@ -144,93 +137,271 @@ export default function GradesListPage() {
   };
 
   return (
-    <div className="p-6 md:p-8">
-      <h1 className="text-2xl font-bold mb-4">Daftar Nilai</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Filter Pencarian Nilai</CardTitle>
-          <p className="text-muted-foreground">Semester Aktif: <strong>{activeSemester || 'Belum Diatur'}</strong></p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSearch} className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-            {/* KOREKSI 5: Sederhanakan UI Filter */}
-            <div className="lg:col-span-1"><Label>Kelas</Label><Select value={filters.classId} onValueChange={value => handleFilterChange('classId', value)}><SelectTrigger><SelectValue placeholder="Semua Kelas" /></SelectTrigger><SelectContent>{masterData?.classes.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.level}-{c.name}</SelectItem>)}</SelectContent></Select></div>
-            <div className="lg:col-span-1"><Label>Mata Pelajaran</Label><Select value={filters.subjectId} onValueChange={value => handleFilterChange('subjectId', value)}><SelectTrigger><SelectValue placeholder="Semua Mapel" /></SelectTrigger><SelectContent>{masterData?.subjects.map(s => <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>)}</SelectContent></Select></div>
-            <div className="lg:col-span-1"><Label>Jenis Ujian</Label><Select value={filters.gradeTypeId} onValueChange={value => handleFilterChange('gradeTypeId', value)}><SelectTrigger><SelectValue placeholder="Semua Jenis" /></SelectTrigger><SelectContent>{masterData?.grade_types.map(gt => <SelectItem key={gt.id} value={String(gt.id)}>{gt.name}</SelectItem>)}</SelectContent></Select></div>
-            <div className="lg:col-span-1"><Label htmlFor="exam_date">Tanggal Ujian</Label><Input id="exam_date" type="date" value={filters.examDate} onChange={e => handleFilterChange('examDate', e.target.value)} /></div>
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 items-end">
-              <Button type="submit" className="w-full">Cari</Button>
-              <Button type="button" variant="outline" onClick={resetFilters} className="w-full">Reset</Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header */}
+        <div className=" sm:text-left space-y-2 mb-4">
+          <div className="flex items-center sm:justify-start gap-3 mb-2">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <ScrollTextIcon className="h-6 w-6 text-purple-600" />
             </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Tombol Ekspor */}
-      <div className="flex justify-end mt-4">
-        <Button onClick={handleExport} disabled={isExporting}>
-          <Download className="mr-2 h-4 w-4" />
-          {isExporting ? 'Mengekspor...' : 'Ekspor ke Excel'}
-        </Button>
-      </div>
-
-      <div className="mt-6 rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tanggal Ujian</TableHead>
-              <TableHead>Nama Murid</TableHead>
-              <TableHead>Kelas</TableHead>
-              <TableHead>Mata Pelajaran</TableHead>
-              <TableHead>Jenis Ujian</TableHead>
-              <TableHead className="text-right">Nilai</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="text-center">Memuat data nilai...</TableCell></TableRow>
-            ) : grades && grades.data.length > 0 ? (
-              grades.data.map(grade => (
-                <TableRow key={grade.id}>
-                  <TableCell>{new Date(grade.exam_date).toLocaleDateString('id-ID')}</TableCell>
-                  <TableCell>{grade.student_profile.user.name}</TableCell>
-                  <TableCell>{grade.student_profile.class_model.level}-{grade.student_profile.class_model.name}</TableCell>
-                  <TableCell>{grade.subject.name}</TableCell>
-                  <TableCell>{grade.grade_type.name}</TableCell>
-                  <TableCell className="text-right font-bold text-lg">{grade.score}</TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  {/* KOREKSI 3: Tampilkan pesan yang berbeda berdasarkan state */}
-                  {hasSearched ? "Tidak ada data nilai yang cocok dengan filter." : "Silakan pilih filter di atas untuk menampilkan data."}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      
-      {/* Paginasi hanya ditampilkan jika ada data */}
-      {grades && grades.data.length > 0 && (
-        <div className="flex items-center justify-end space-x-2 py-4">
-            <Button
-              variant="outline" size="sm"
-              onClick={() => fetchGrades(grades!.current_page - 1, filters)}
-              disabled={!grades || grades.current_page <= 1}
-            >
-              Sebelumnya
-            </Button>
-            <Button
-              variant="outline" size="sm"
-              onClick={() => fetchGrades(grades!.current_page + 1, filters)}
-              disabled={!grades || grades.current_page >= grades.last_page}
-            >
-              Berikutnya
-            </Button>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Daftar Nilai
+            </h1>
+          </div>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+            Kelola dan pantau nilai siswa Anda dengan mudah. Gunakan filter untuk menemukan data yang Anda butuhkan.
+          </p>
         </div>
-      )}
+
+        {/* Filter Card */}
+        <Card className="mb-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Filter className="h-5 w-5 text-primary" />
+                Filter Pencarian Nilai
+              </CardTitle>
+              <div className="text-xs sm:text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
+                Semester: <strong>{activeSemester || 'Belum Diatur'}</strong>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSearch} className="space-y-4">
+              {/* Grid Filter - Responsive */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Kelas Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Kelas</Label>
+                  <Select value={filters.classId} onValueChange={value => handleFilterChange('classId', value)}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Semua Kelas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {masterData?.classes.map(c => (
+                        <SelectItem key={c.id} value={String(c.id)}>
+                          {c.level}-{c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Mata Pelajaran Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Mata Pelajaran</Label>
+                  <Select value={filters.subjectId} onValueChange={value => handleFilterChange('subjectId', value)}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Semua Mapel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {masterData?.subjects.map(s => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Jenis Ujian Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Jenis Ujian</Label>
+                  <Select value={filters.gradeTypeId} onValueChange={value => handleFilterChange('gradeTypeId', value)}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Semua Jenis" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {masterData?.grade_types.map(gt => (
+                        <SelectItem key={gt.id} value={String(gt.id)}>
+                          {gt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Tanggal Ujian Filter */}
+                <div className="space-y-2">
+                  <Label htmlFor="exam_date" className="text-sm font-medium">Tanggal Ujian</Label>
+                  <Input 
+                    id="exam_date" 
+                    type="date" 
+                    value={filters.examDate} 
+                    onChange={e => handleFilterChange('examDate', e.target.value)}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <Button type="submit" className="flex-1 sm:flex-none h-10 p-2" size="sm">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Cari Data
+                </Button>
+                <Button type="button" variant="outline" onClick={resetFilters} className="flex-1 sm:flex-none h-10 p-2" size="sm">
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Reset Filter
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Export Button */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-sm text-muted-foreground">
+            {grades && `Menampilkan ${grades.data.length} dari total data`}
+          </div>
+          <Button 
+            onClick={handleExport} 
+            disabled={isExporting}
+            variant="default"
+            size="sm"
+            className="shadow-lg"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {isExporting ? 'Mengekspor...' : 'Ekspor Excel'}
+          </Button>
+        </div>
+
+        {/* Table Card */}
+        <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="font-semibold">Tanggal</TableHead>
+                  <TableHead className="font-semibold">Nama Murid</TableHead>
+                  <TableHead className="font-semibold hidden sm:table-cell">Kelas</TableHead>
+                  <TableHead className="font-semibold hidden md:table-cell">Mata Pelajaran</TableHead>
+                  <TableHead className="font-semibold hidden lg:table-cell">Jenis Ujian</TableHead>
+                  <TableHead className="font-semibold text-right">Nilai</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-12">
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <p className="text-muted-foreground">Memuat data nilai...</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : grades && grades.data.length > 0 ? (
+                  grades.data.map(grade => (
+                    <TableRow key={grade.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell className="font-medium">
+                        <div className="text-sm">
+                          {new Date(grade.exam_date).toLocaleDateString('id-ID', { 
+                            day: '2-digit', 
+                            month: 'short' 
+                          })}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-medium text-sm">
+                            {grade.student_profile.user.name}
+                          </div>
+                          {/* Mobile: Show class info */}
+                          <div className="text-xs text-muted-foreground sm:hidden">
+                            {grade.student_profile.class_model.level}-{grade.student_profile.class_model.name}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <span className="text-sm font-medium">
+                          {grade.student_profile.class_model.level}-{grade.student_profile.class_model.name}
+                        </span>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium">{grade.subject.name}</div>
+                          {/* Mobile-md: Show grade type */}
+                          <div className="text-xs text-muted-foreground lg:hidden">
+                            {grade.grade_type.name}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <span className="text-sm">{grade.grade_type.name}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="space-y-1">
+                          <div className="text-lg font-bold text-primary">
+                            {grade.score}
+                          </div>
+                          {/* Mobile: Show subject and grade type */}
+                          <div className="text-xs text-muted-foreground md:hidden">
+                            {grade.subject.name}
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-12">
+                      <div className="flex flex-col items-center space-y-3">
+                        <div className="rounded-full bg-muted p-3">
+                          <Filter className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-1 text-center">
+                          <p className="font-medium">
+                            {hasSearched ? "Tidak ada data nilai" : "Belum ada pencarian"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {hasSearched 
+                              ? "Coba ubah filter pencarian Anda." 
+                              : "Silakan pilih filter di atas untuk menampilkan data."
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+
+        {/* Pagination */}
+        {grades && grades.data.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+            <div className="text-sm text-muted-foreground">
+              Halaman {grades.current_page} dari {grades.last_page}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => fetchGrades(grades.current_page - 1, filters)}
+                disabled={grades.current_page <= 1}
+                className="w-24"
+              >
+                Sebelumnya
+              </Button>
+              <div className="text-sm font-medium px-3 py-1 bg-muted rounded">
+                {grades.current_page}
+              </div>
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => fetchGrades(grades.current_page + 1, filters)}
+                disabled={grades.current_page >= grades.last_page}
+                className="w-24"
+              >
+                Berikutnya
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Users, BookCopy, School, UserCheck, UserCog, FileText, ClipboardCheck, History, BrainCircuit, Settings, UserCheck2, X, GraduationCap, BookCheck } from "lucide-react";
+import { LayoutDashboard, Users, BookCopy, School, UserCheck, UserCog, FileText, ClipboardCheck, History, BrainCircuit, Settings, UserCheck2, X, GraduationCap, BookCheck, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 
 // Definisikan props baru
@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <aside className={`
-      w-64 flex-shrink-0 bg-gray-800 text-white flex flex-col
+      w-64 flex-shrink-0 bg-white text-gray-600 text-sm flex flex-col
       fixed md:relative inset-y-0 left-0 z-50
       transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
       md:translate-x-0 transition-transform duration-300 ease-in-out
@@ -66,15 +66,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <X className="h-6 w-6" />
         </Button>
       </div>
-      <nav className="flex-grow p-4">
+      <nav className="flex-grow p-4 ">
         <ul>
           {accessibleMenuItems.map((item) => (
             <li key={item.href} className="mb-2">
               <Link
                 href={item.href}
                 onClick={onClose} // Tutup sidebar saat link diklik di mobile
-                className={`flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors ${
-                  pathname === item.href ? "bg-indigo-600" : ""
+                className={`flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors ${
+                  pathname === item.href ? "text-indigo-600" : ""
                 }`}
               >
                 <item.icon className="w-5 h-5 mr-3" />
@@ -91,8 +91,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
         <button 
           onClick={logout}
-          className="w-full text-left flex items-center p-3 rounded-lg hover:bg-red-700 transition-colors"
-        >
+          className="w-full text-left bg-indigo-600 text-white flex items-center p-3 rounded-lg hover:bg-red-600 hover:text-white transition-colors"
+        ><LogOut className="w-5 h-5 mr-3"></LogOut>
           Logout
         </button>
       </div>

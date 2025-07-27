@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
-import Header from '@/components/header'; // <-- Impor Header
+import Header from '@/components/Myheader';
 
 export default function ProtectedLayout({
   children,
@@ -34,7 +34,7 @@ export default function ProtectedLayout({
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 ">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
       
