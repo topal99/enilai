@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\Admin\HomeroomController; 
 use App\Http\Controllers\Api\Teacher\TeacherController; 
 use App\Http\Controllers\Api\Homeroom\WalikelasController; 
+use App\Http\Controllers\Api\Student\StudentController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -84,5 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     });
 
+    Route::middleware('role:murid')->prefix('student')->group(function () {
+        Route::get('/dashboard-summary', [StudentController::class, 'dashboardSummary']);
+        Route::get('/grades', [StudentController::class, 'getGrades']); // <-- TAMBAHKAN INI
+    });
 
 });

@@ -28,6 +28,7 @@ const menuItems = [
   // Menu Murid
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["murid"] },
   { href: "/student/grades", label: "Nilai Saya", icon: GraduationCap, roles: ["murid"] },
+  { href: "/student/settings", label: "Pengaturan Akun", icon: Settings, roles: ["murid"] }, 
 
   // Menu Guru
   { href: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["guru"] },
