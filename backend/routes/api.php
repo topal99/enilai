@@ -82,7 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard-summary', [WalikelasController::class, 'dashboardSummary']);
         Route::get('/student/{student}/report', [WalikelasController::class, 'getStudentReport']);
         Route::post('/report/generate-comment', [WalikelasController::class, 'generateAiComment']);
-
+        Route::post('/student/{student}/report/export', [WalikelasController::class, 'exportStudentReport']);
     });
 
     Route::middleware('role:murid')->prefix('student')->group(function () {

@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+
 import { 
   FileText, 
   User, 
@@ -123,30 +124,25 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="px-4 py-6 sm:px-6 lg:px-8 mx-auto space-y-6">
         
         {/* Header Section - Optimized for mobile */}
         <div className="bg-gradient-to-r from-indigo-500 to-blue-400 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
           <div className="flex flex-col space-y-4">
             <div className="flex items-start justify-between">
+              
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-white/20 rounded-lg">
                     <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">
-                    Rapor Siswa
-                  </h1>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">Rapor Siswa</h1>
                 </div>
-                <p className="text-base sm:text-lg font-medium opacity-90 mb-1">
-                  Kelas {data.class_name}
-                </p>
-                <p className="text-sm sm:text-base opacity-75 leading-relaxed">
-                  Kelola dan lihat laporan akademik siswa
-                </p>
-              </div>
-              
+                <p className="text-base sm:text-lg font-medium opacity-90 mb-1">Kelas {data.class_name}</p>
+                <p className="text-sm sm:text-base opacity-75 leading-relaxed">Kelola dan lihat laporan akademik siswa</p>
+              </div> 
+
               <div className="flex flex-col items-end gap-2 ml-4">
                 <Badge className="bg-white/20 text-white border-white/30 text-xs sm:text-sm whitespace-nowrap">
                   {data.students.length} Siswa
@@ -192,7 +188,7 @@ export default function ReportPage() {
                 <Link key={student.id} href={`/homeroom/report/${student.id}`}>
                   {/* Kartu dibuat menjadi flex-col untuk kontrol layout vertikal */}
                   <Card className="flex h-full flex-col cursor-pointer border-gray-200 transition-all duration-300 group hover:border-indigo-400 hover:shadow-xl hover:-translate-y-1">
-                    <CardContent className="flex flex-col items-center text-center p-5">
+                    <CardContent className="flex flex-col items-center text-center p-2">
                       <div>
                         <div className="flex items-center gap-4">
                           <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-lg font-semibold text-white shadow-sm">
@@ -202,19 +198,18 @@ export default function ReportPage() {
                             <h3 className="truncate text-base font-bold text-gray-900 transition-colors group-hover:text-indigo-600">
                               {student.name}
                             </h3>
-                            <p className="text-sm text-gray-500">ID: {student.id}</p>
+                              <div className="mt-2">
+                                <Badge variant="outline" className="border-green-200 bg-green-50 text-xs text-green-700">
+                                  <UserCheck className="mr-1 h-3 w-3" />
+                                  Aktif
+                                </Badge>
+                              </div>
                           </div>
-                        </div>
-                        <div className="mt-4">
-                          <Badge variant="outline" className="border-green-200 bg-green-50 text-xs text-green-700">
-                            <UserCheck className="mr-1 h-3 w-3" />
-                            Aktif
-                          </Badge>
                         </div>
                       </div>
 
                       {/* BAGIAN BAWAH: Statistik */}
-                      <div className="mt-5 border-t border-gray-200 pt-4">
+                      <div className="pt-6">
                         <div className="flex justify-between gap-10">
                           <div>
                             <p className="text-xl font-bold text-indigo-600">{student.average_score}</p>
@@ -237,7 +232,7 @@ export default function ReportPage() {
               {filteredStudents.map((student) => (
                 <Link key={student.id} href={`/homeroom/report/${student.id}`}>
                   <Card className="cursor-pointer mb-4 border-gray-200 transition-all duration-200 hover:border-indigo-400 hover:shadow-lg active:scale-[0.98]">
-                    <CardContent className="flex flex-col items-center gap-3 p-4 text-center">
+                    <CardContent className="flex flex-col items-center gap-3  text-center">
                       {/* Avatar */}
                       <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-xl font-bold text-white">
                         <span className="leading-none">{student.name.charAt(0).toUpperCase()}</span>
@@ -246,17 +241,13 @@ export default function ReportPage() {
                       {/* Info Utama */}
                       <div className="mt-1">
                         <h3 className="text-lg font-bold text-gray-900">{student.name}</h3>
-                        <p className="text-sm text-gray-500">ID: {student.id}</p>
+                        <div className="mt-2">
+                          <Badge variant="outline" className="border-green-200 bg-green-50 text-xs text-green-700">
+                            <UserCheck className="mr-1 h-3 w-3" />
+                            Aktif
+                          </Badge>
+                        </div>
                       </div>
-
-                      {/* Status Badge */}
-                      <Badge variant="outline" className="border-green-200 bg-green-50 px-2 py-0.5 text-xs text-green-700">
-                        <UserCheck className="mr-1 h-3 w-3" />
-                        Aktif
-                      </Badge>
-
-                      {/* Garis Pemisah */}
-                      <div className="my-2 w-full border-t border-gray-200"></div>
 
                       {/* Statistik */}
                       <div className="flex w-full items-center justify-around gap-4">

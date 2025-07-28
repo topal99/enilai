@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Role; // KOREKSI 1: Menambahkan impor kelas Role
 use App\Models\StudentProfile; // KOREKSI 2: Mengganti Student dengan StudentProfile
 
-class AdminController extends Controller
-{
-    // Method dashboardSummary() sudah benar, tidak ada perubahan.
+class AdminController extends Controller {
     public function dashboardSummary()
     {
         $stats = [

@@ -12,8 +12,16 @@ use App\Models\Setting;
 use App\Models\Semester;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB; // <-- TAMBAHKAN BARIS INI
+use Illuminate\Support\Facades\DB; 
 use App\Models\StudentProfile;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StudentReportExport;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+
 
 class WalikelasController extends Controller
 {
@@ -152,9 +160,16 @@ class WalikelasController extends Controller
             ->where('semester_id', $activeSemesterId)
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')->get()->pluck('total', 'status');
+            
+        $perSubjectAverages = $reportData->pluck('average');
+        $overallAverageScore = $perSubjectAverages->isNotEmpty() ? $perSubjectAverages->avg() : 0;
 
         return response()->json([
-            'student' => $student->only('id', 'name'),
+            'student' => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'average_score' => number_format((float)$overallAverageScore, 2), // Sertakan di sini
+            ],
             'class' => $class->level . '-' . $class->name,
             'semester' => Semester::find($activeSemesterId)?->name,
             'report_data' => $reportData,
@@ -165,6 +180,7 @@ class WalikelasController extends Controller
                 'alpa' => $attendanceSummary->get('alpa', 0),
             ]
         ]);
+
     }
 
     /**
@@ -234,6 +250,80 @@ class WalikelasController extends Controller
             return null;
         }
     }
+
+    public function exportStudentReport(User $student)
+    {
+        // Panggil method getStudentReport untuk mendapatkan data JSON
+        $reportJsonResponse = $this->getStudentReport($student);
+        
+        // Cek jika ada error (misal: akses ditolak)
+        if ($reportJsonResponse->getStatusCode() !== 200) {
+            return $reportJsonResponse; // Kembalikan respons error
+        }
+
+        // Ambil data dari respons JSON
+        $reportData = json_decode($reportJsonResponse->getContent(), true);
+
+        $studentInfo = [
+            'name' => $reportData['student']['name'],
+            'class' => $reportData['class'],
+            'semester' => $reportData['semester'],
+            'average_score' => $reportData['student']['average_score'],
+        ];
+
+        // Buat koleksi baru untuk isi tabel
+        $gradesCollection = collect($reportData['report_data'])->map(function ($data, $subject) {
+            return [
+                'subject' => $subject,
+                'average' => $data['average'],
+            ];
+        });
+        
+        $fileName = 'rapor_' . str_replace(' ', '_', strtolower($studentInfo['name'])) . '.xlsx';
+
+        // Ganti implementasi export agar lebih sesuai
+        $export = new class($gradesCollection, $studentInfo, $reportData['attendance_summary']) implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles {
+            protected $collection, $studentInfo, $attendanceSummary;
+
+            public function __construct($collection, $studentInfo, $attendanceSummary) {
+                $this->collection = $collection;
+                $this->studentInfo = $studentInfo;
+                $this->attendanceSummary = $attendanceSummary;
+            }
+            public function collection() { return $this->collection; }
+            public function headings(): array {
+                return [
+                    ['Rapor Akademik Siswa'],
+                    ['Nama Siswa', $this->studentInfo['name']],
+                    ['Kelas', $this->studentInfo['class']],
+                    ['Semester', $this->studentInfo['semester']],
+                    [' '],
+                    ['Mata Pelajaran', 'Rata-rata Nilai'],
+                ];
+            }
+            public function styles(Worksheet $sheet) {
+                $sheet->mergeCells('A1:B1');
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+                $sheet->getStyle('A2:A4')->getFont()->setBold(true);
+                $sheet->getStyle('A6:B6')->getFont()->setBold(true);
+                $lastRow = count($this->collection) + 6;
+                $sheet->getStyle('A6:B' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                $attStartRow = $lastRow + 2;
+                $sheet->setCellValue('A' . $attStartRow, 'Rekap Absensi')->getStyle('A' . $attStartRow)->getFont()->setBold(true);
+                $sheet->setCellValue('A' . ($attStartRow + 1), 'Hadir')->setCellValue('B' . ($attStartRow + 1), $this->attendanceSummary['hadir']);
+                $sheet->setCellValue('A' . ($attStartRow + 2), 'Sakit')->setCellValue('B' . ($attStartRow + 2), $this->attendanceSummary['sakit']);
+                $sheet->setCellValue('A' . ($attStartRow + 3), 'Izin')->setCellValue('B' . ($attStartRow + 3), $this->attendanceSummary['izin']);
+                $sheet->setCellValue('A' . ($attStartRow + 4), 'Alpa')->setCellValue('B' . ($attStartRow + 4), $this->attendanceSummary['alpa']);
+                $avgScoreStartRow = $attStartRow + 6; 
+                $sheet->setCellValue('A' . $avgScoreStartRow, 'Rata-rata Keseluruhan')->getStyle('A' . $avgScoreStartRow)->getFont()->setBold(true);
+                $sheet->setCellValue('B' . $avgScoreStartRow, $this->studentInfo['average_score'])->getStyle('B' . $avgScoreStartRow)->getFont()->setBold(true);
+
+            }
+        };
+
+        return Excel::download($export, $fileName);
+    }
+
 
 
 

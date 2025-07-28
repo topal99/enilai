@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import api from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,38 +22,21 @@ import {
   AlertTriangle,
   BarChart3,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  Download,
+  FileText
 } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 // Definisikan tipe data
-interface GradeDetail { 
-  score: number; 
-  grade_type: { name: string }; 
-  exam_date: string;
-}
-interface SubjectReport { 
-  grades: GradeDetail[]; 
-  average: number; 
-}
-interface ReportData { 
-  [key: string]: SubjectReport; 
-}
-interface AiComment { 
-  summary: string; 
-  strengths: string; 
-  areas_for_improvement: string; 
-  recommendation: string; 
-}
-interface AttendanceSummary {
-  hadir: number; 
-  sakit: number; 
-  izin: number; 
-  alpa: number;
-}
+interface GradeDetail { score: number; grade_type: { name: string }; exam_date: string; }
+interface SubjectReport { grades: GradeDetail[]; average: number; }
+interface ReportData { [key: string]: SubjectReport; }
+interface AiComment { summary: string; strengths: string; areas_for_improvement: string; recommendation: string; }
+interface AttendanceSummary { hadir: number; sakit: number; izin: number; alpa: number; }
 interface Report {
-  student: { id: number; name: string , average_score: string};
+  student: { id: number; name: string; average_score: string }; // Pastikan average_score ada di sini
   class: string;
   semester: string;
   report_data: ReportData;
@@ -67,6 +50,7 @@ export default function StudentReportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [aiComment, setAiComment] = useState<AiComment | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (studentId) {
@@ -124,6 +108,25 @@ export default function StudentReportPage() {
     return "text-red-600 dark:text-red-400";
   };
 
+  const attendanceRate = useMemo(() => {
+    if (!report?.attendance_summary) return 0;
+    const { hadir, sakit, izin, alpa } = report.attendance_summary;
+    const totalDays = hadir + sakit + izin + alpa;
+    return totalDays > 0 ? Math.round((hadir / totalDays) * 100) : 100;
+  }, [report]);
+
+  if (isLoading) return <div className="p-8">Memuat Rapor Siswa...</div>;
+  if (!report) return <div className="p-8 text-red-500">Gagal memuat data rapor.</div>;
+  
+  const chartData = {
+    labels: Object.keys(report.report_data),
+    datasets: [{
+      label: 'Rata-rata Nilai',
+      data: Object.values(report.report_data).map((sub: any) => sub.average),
+      backgroundColor: 'rgba(79, 70, 229, 0.8)',
+    }],
+  };
+
   const getGradeBadge = (average: number) => {
     if (average >= 90) return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Excellent</Badge>;
     if (average >= 80) return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Good</Badge>;
@@ -136,9 +139,6 @@ export default function StudentReportPage() {
     report.attendance_summary.sakit + 
     report.attendance_summary.izin + 
     report.attendance_summary.alpa : 0;
-
-  const attendanceRate = totalAttendance > 0 ? 
-    Math.round((report!.attendance_summary.hadir / totalAttendance) * 100) : 0;
 
   const average_score = report ?
     Object.values(report.report_data).reduce((sum, sub) => sum + sub.average, 0) / Object.keys(report.report_data).length : 0;
@@ -186,19 +186,6 @@ export default function StudentReportPage() {
     );
   }
 
-  const chartData = {
-    labels: Object.keys(report.report_data),
-    datasets: [{
-      label: 'Rata-rata Nilai',
-      data: Object.values(report.report_data).map((sub: any) => sub.average),
-      backgroundColor: 'rgba(99, 102, 241, 0.8)',
-      borderColor: 'rgba(99, 102, 241, 1)',
-      borderWidth: 2,
-      borderRadius: 8,
-      borderSkipped: false,
-    }],
-  };
-
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -230,42 +217,75 @@ export default function StudentReportPage() {
     },
   };
 
+    const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await api.post(`/homeroom/student/${studentId}/report/export`, {}, {
+        responseType: 'blob', // Penting untuk download file
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = `rapor_${report.student.name.replace(' ', '_')}.xlsx`;
+      if (contentDisposition) {
+          const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (fileNameMatch && fileNameMatch.length === 2) fileName = fileNameMatch[1];
+      }
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Gagal mengekspor rapor:", error);
+      alert("Gagal mengekspor rapor.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         {/* Header Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-6 md:p-8 text-white shadow-xl">
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-2">
-              <User className="h-8 w-8" />
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">Rapor Akademik</h1>
-            </div>
-            <p className="text-xl md:text-2xl font-semibold mb-2">{report.student.name}</p>
-            <div className="flex flex-wrap gap-4 text-sm md:text-base opacity-90">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                <span>Kelas: {report.class}</span>
+
+        <div className="bg-gradient-to-r from-indigo-500 to-blue-400 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-start justify-between">
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+
+                      <div className="p-2 bg-white/20 rounded-lg">
+                        <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
+                      </div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">Rapor Siswa</h1>
+                    </div>
+                      <p className="text-base sm:text-lg font-medium opacity-90 mb-1">{report.student.name}</p>
+                      <p className="text-sm sm:text-base opacity-75 leading-relaxed">Kelas: {report.class} | Semester: {report.semester}</p>
+                </div>
+                  </div>
+                    <div className="flex flex-col items-end gap-2 ml-4">
+                    <Button onClick={handleExport} disabled={isExporting}>
+                      <Download className="mr-2 h-4 w-4" />
+                      {isExporting ? "Mengekspor..." : "Ekspor Rapor"}
+                    </Button>
+                  </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>Semester: {report.semester}</span>
-              </div>
             </div>
-          </div>
-        </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-            <CardContent className="p-4 text-center">
+          <Card className="bg-white">
+              <CardContent className="p-4 text-center">
               <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
               <p className="text-2xl md:text-3xl font-bold text-green-700 dark:text-green-300">{report.attendance_summary.hadir}</p>
               <p className="text-sm text-green-600 dark:text-green-400 font-medium">Hadir</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+          <Card className="bg-white">
             <CardContent className="p-4 text-center">
               <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
               <p className="text-2xl md:text-3xl font-bold text-blue-700 dark:text-blue-300">{report.attendance_summary.sakit}</p>
@@ -273,7 +293,7 @@ export default function StudentReportPage() {
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900 border-yellow-200 dark:border-yellow-800">
+          <Card className="bg-white">
             <CardContent className="p-4 text-center">
               <AlertTriangle className="h-8 w-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
               <p className="text-2xl md:text-3xl font-bold text-yellow-700 dark:text-yellow-300">{report.attendance_summary.izin}</p>
@@ -281,7 +301,7 @@ export default function StudentReportPage() {
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800">
+          <Card className="bg-white">
             <CardContent className="p-4 text-center">
               <XCircle className="h-8 w-8 text-red-600 dark:text-red-400 mx-auto mb-2" />
               <p className="text-2xl md:text-3xl font-bold text-red-700 dark:text-red-300">{report.attendance_summary.alpa}</p>
@@ -292,7 +312,7 @@ export default function StudentReportPage() {
 
         {/* Attendance Rate Card */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 border-indigo-200 dark:border-indigo-800">
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
                 <TrendingUp className="h-5 w-5" />
@@ -334,8 +354,8 @@ export default function StudentReportPage() {
             </CardContent>
           </Card>
 
-        {/* Average Score Card */}
-          <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 border-indigo-200 dark:border-indigo-800">
+          {/* Average Score Card */}
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
                 <TrendingUp className="h-5 w-5" />
@@ -376,8 +396,8 @@ export default function StudentReportPage() {
               </div>
             </CardContent>
           </Card>
-
         </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* Chart Section */}
         <Card className="shadow-lg">
@@ -393,7 +413,7 @@ export default function StudentReportPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* AI Comment Section */}
         <Card className="shadow-lg border-purple-200 dark:border-purple-800">
           <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950">
@@ -448,9 +468,10 @@ export default function StudentReportPage() {
             </Button>
           </CardContent>
         </Card>
-
+      </div>
+      
         {/* Subjects Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {Object.entries(report.report_data as ReportData).map(([subject, data]) => (
             <Card key={subject} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader className="pb-3">
