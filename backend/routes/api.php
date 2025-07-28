@@ -73,9 +73,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/settings/change-password', [SettingsController::class, 'changePassword']);
         Route::post('/grades/export', [TeacherController::class, 'exportGrades']); 
         Route::post('/attendances/bulk-store', [TeacherController::class, 'bulkStoreAttendances']); 
-        Route::get('/attendances', [TeacherController::class, 'getAttendances']); // <-- TAMBAHKAN INI
-        Route::get('/attendances/summary', [TeacherController::class, 'getAttendanceSummary']); // <-- TAMBAHKAN INI
-        Route::get('/attendance/status', [TeacherController::class, 'getAttendanceStatus']); // <-- TAMBAHKAN INI
+        Route::get('/attendances', [TeacherController::class, 'getAttendances']);
+        Route::get('/attendances/summary', [TeacherController::class, 'getAttendanceSummary']);
+        Route::get('/attendance/status', [TeacherController::class, 'getAttendanceStatus']);
     });
 
     Route::middleware('role:walikelas')->prefix('homeroom')->group(function () {
@@ -88,7 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:murid')->prefix('student')->group(function () {
         Route::get('/dashboard-summary', [StudentController::class, 'dashboardSummary']);
         Route::get('/grades', [StudentController::class, 'getGrades']);
-        Route::get('/subjects-with-grades', [StudentController::class, 'getSubjectsWithGrades']); // <-- TAMBAHKAN INI
+        Route::get('/subjects-with-grades', [StudentController::class, 'getSubjectsWithGrades']);
 
     });
 

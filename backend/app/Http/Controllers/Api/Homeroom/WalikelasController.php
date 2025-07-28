@@ -36,9 +36,9 @@ class WalikelasController extends Controller
 
         $studentProfileIds = StudentProfile::where('class_model_id', $class->id)->pluck('id');
         
+        // Statistik rata-rata per mapel untuk chart (ini sudah benar)
         $averageScoresBySubject = [];
         if ($studentProfileIds->isNotEmpty()) {
-            // Ambil semua nilai, kelompokkan berdasarkan mapel, lalu hitung rata-ratanya
             $averageScoresBySubject = Grade::with('subject:id,name')
                 ->whereIn('student_id', $studentProfileIds)
                 ->where('semester_id', $activeSemesterId)
@@ -49,16 +49,47 @@ class WalikelasController extends Controller
                 });
         }
         
+        // OPTIMASI: Ambil semua nilai (termasuk subject_id) untuk semua siswa di kelas
+        $allGradesForClass = Grade::whereIn('student_id', $studentProfileIds)
+            ->where('semester_id', $activeSemesterId)
+            ->select('student_id', 'subject_id', 'score')
+            ->get()
+            ->groupBy('student_id');
+        
         $students = User::whereHas('studentProfile', function ($query) use ($class) {
             $query->where('class_model_id', $class->id);
         })
+        ->with('studentProfile:id,user_id')
         ->orderBy('name')->get(['id', 'name']);
         
-        $students->each(function ($student) use ($activeSemesterId) {
-            $student->average_score = Grade::where('student_id', $student->studentProfile->id)
-                ->where('semester_id', $activeSemesterId)
-                ->avg('score') ?: 0;
+        $students->each(function ($student) use ($activeSemesterId, $allGradesForClass) {
+            $studentGrades = $allGradesForClass->get($student->studentProfile->id);
 
+            if ($studentGrades && $studentGrades->isNotEmpty()) {
+                // KOREKSI UTAMA: Hitung rata-rata dari rata-rata per mapel
+                
+                // 1. Kelompokkan nilai siswa berdasarkan mapel (subject_id)
+                $gradesBySubject = $studentGrades->groupBy('subject_id');
+
+                // 2. Hitung rata-rata untuk setiap mapel, hasilnya adalah koleksi berisi rata-rata per mapel.
+                // Contoh: [Matematika => 85, B. Indonesia => 90]
+                $subjectAverages = $gradesBySubject->map(function ($subjectGrades) {
+                    $totalScore = $subjectGrades->sum('score');
+                    $countGrades = $subjectGrades->count();
+                    return $countGrades > 0 ? $totalScore / $countGrades : 0;
+                });
+
+                // 3. Hitung rata-rata dari koleksi rata-rata mapel di atas.
+                // Contoh: (85 + 90) / 2 = 87.5
+                $finalAverage = $subjectAverages->avg();
+                
+                $student->average_score = round($finalAverage, 2);
+
+            } else {
+                $student->average_score = 0;
+            }
+
+            // Logika absensi tetap sama
             $attendanceSummary = $student->studentProfile->attendances()
                 ->where('semester_id', $activeSemesterId)
                 ->select('status', DB::raw('count(*) as total'))

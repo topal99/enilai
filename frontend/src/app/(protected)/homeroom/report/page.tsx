@@ -21,7 +21,8 @@ import {
   ChevronRight,
   BookOpen,
   AlertCircle,
-  UserCheck
+  UserCheck,
+  X
 } from "lucide-react";
 import Link from "next/link";
 
@@ -44,7 +45,7 @@ export default function ReportPage() {
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
 
   useEffect(() => {
-    // Kita gunakan lagi API dasbor untuk mendapatkan daftar siswa
+    // Kita gunakan lagi API dashboard untuk mendapatkan daftar siswa
     api.get('/homeroom/dashboard-summary')
       .then(res => {
         setData(res.data);
@@ -63,24 +64,42 @@ export default function ReportPage() {
     }
   }, [searchTerm, data]);
 
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-80" />
-            <Skeleton className="h-6 w-64" />
+      <div className="min-h-screen bg-gray-50">
+        <div className="px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+          {/* Mobile Header Skeleton */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-5 w-32 mb-4" />
+            <Skeleton className="h-4 w-64" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           
+          {/* Search Skeleton */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <Skeleton className="h-10 w-full" />
+          </div>
+
+          {/* Cards Skeleton */}
+          <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
+              <div key={i} className="bg-white rounded-xl p-4 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton className="h-5 w-32 mb-1" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <Skeleton className="h-12 w-16" />
+                  <Skeleton className="h-12 w-16" />
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -90,11 +109,11 @@ export default function ReportPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto p-4 md:p-6 lg:p-8">
-          <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
+      <div className="min-h-screen bg-gray-50">
+        <div className="px-4 py-6 sm:px-6 lg:px-8">
+          <Alert className="border-red-200 bg-red-50">
             <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-700 dark:text-red-300">
+            <AlertDescription className="text-red-700">
               Gagal memuat data siswa. Silakan coba lagi nanti.
             </AlertDescription>
           </Alert>
@@ -104,175 +123,218 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
-        {/* Header Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-6 md:p-8 text-white shadow-xl">
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative z-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+      <div className="px-4 py-6 sm:px-6 lg:px-8 mx-auto space-y-6">
+        
+        {/* Header Section - Optimized for mobile */}
+        <div className="bg-gradient-to-r from-indigo-500 to-blue-400 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
-                  <FileText className="h-8 w-8" />
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">Rapor Siswa</h1>
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">
+                    Rapor Siswa
+                  </h1>
                 </div>
-                <p className="text-lg md:text-xl opacity-90">Kelas {data.class_name}</p>
-                <p className="text-sm md:text-base opacity-80 mt-1">
-                  Kelola dan lihat laporan akademik siswa di kelas perwalian Anda
+                <p className="text-base sm:text-lg font-medium opacity-90 mb-1">
+                  Kelas {data.class_name}
+                </p>
+                <p className="text-sm sm:text-base opacity-75 leading-relaxed">
+                  Kelola dan lihat laporan akademik siswa
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <Badge className="bg-white/20 text-white border-white/30">
-                  {data.students.length} Siswa Total
+              
+              <div className="flex flex-col items-end gap-2 ml-4">
+                <Badge className="bg-white/20 text-white border-white/30 text-xs sm:text-sm whitespace-nowrap">
+                  {data.students.length} Siswa
                 </Badge>
-                <div className="text-sm opacity-80">
-                  {filteredStudents.length} dari {data.students.length} ditampilkan
-                </div>
+                {searchTerm && (
+                  <Badge variant="secondary" className="text-xs">
+                    {filteredStudents.length} hasil
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <Card className="shadow-xl border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-          <CardContent className="p-6">
-            {/* Search Bar */}
-            <div className="relative mb-6">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Cari nama siswa..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full md:w-96 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:focus:border-indigo-400"
-              />
-              {searchTerm && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <Badge variant="secondary" className="text-xs">
-                    {filteredStudents.length} hasil
-                  </Badge>
-                </div>
-              )}
+        {/* Search Section */}
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Cari nama siswa..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10 py-3 w-full border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg"
+            />
+            {searchTerm && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="h-4 w-4 text-gray-400" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Students List */}
+        {filteredStudents.length > 0 ? (
+          <>
+            {/* Desktop Grid View - Hidden on mobile */}
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {filteredStudents.map((student) => (
+                <Link key={student.id} href={`/homeroom/report/${student.id}`}>
+                  {/* Kartu dibuat menjadi flex-col untuk kontrol layout vertikal */}
+                  <Card className="flex h-full flex-col cursor-pointer border-gray-200 transition-all duration-300 group hover:border-indigo-400 hover:shadow-xl hover:-translate-y-1">
+                    <CardContent className="flex flex-col items-center text-center p-5">
+                      <div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-lg font-semibold text-white shadow-sm">
+                            <span className="leading-none">{student.name.charAt(0).toUpperCase()}</span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="truncate text-base font-bold text-gray-900 transition-colors group-hover:text-indigo-600">
+                              {student.name}
+                            </h3>
+                            <p className="text-sm text-gray-500">ID: {student.id}</p>
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <Badge variant="outline" className="border-green-200 bg-green-50 text-xs text-green-700">
+                            <UserCheck className="mr-1 h-3 w-3" />
+                            Aktif
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* BAGIAN BAWAH: Statistik */}
+                      <div className="mt-5 border-t border-gray-200 pt-4">
+                        <div className="flex justify-between gap-10">
+                          <div>
+                            <p className="text-xl font-bold text-indigo-600">{student.average_score}</p>
+                            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Rata-rata</p>
+                          </div>
+                          <div>
+                            <p className="text-xl font-bold text-green-600">{student.attendance_percentage}%</p>
+                            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Kehadiran</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
             </div>
 
-            {/* Students List */}
-            {filteredStudents.length > 0 ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredStudents.map((student, index) => (
-                    <div key={student.id} className="group">
-                      <Link href={`/homeroom/report/${student.id}`}>
-                        <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer border-gray-200 hover:border-indigo-300 dark:border-gray-700 dark:hover:border-indigo-600 group-hover:scale-[1.02]">
-                          <CardContent className="p-5">
-                            <div className="flex items-center gap-4 mb-4">
-                              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                {student.name.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors truncate">
-                                  {student.name}
-                                </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                  ID: {student.id}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Badge 
-                                  variant="outline" 
-                                  className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800"
-                                >
-                                  <UserCheck className="h-3 w-3 mr-1" />
-                                  Aktif
-                                </Badge>
-                              </div>
-                              
-                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  className="h-8 px-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900 dark:hover:bg-indigo-800 dark:text-indigo-300"
-                                >
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  Lihat
-                                </Button>
-                                <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-indigo-500 transition-colors" />
-                              </div>
-                            </div>
+            {/* Mobile List View - Shown only on mobile */}
+            <div className="space-y-4 md:hidden">
+              {filteredStudents.map((student) => (
+                <Link key={student.id} href={`/homeroom/report/${student.id}`}>
+                  <Card className="cursor-pointer mb-4 border-gray-200 transition-all duration-200 hover:border-indigo-400 hover:shadow-lg active:scale-[0.98]">
+                    <CardContent className="flex flex-col items-center gap-3 p-4 text-center">
+                      {/* Avatar */}
+                      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-xl font-bold text-white">
+                        <span className="leading-none">{student.name.charAt(0).toUpperCase()}</span>
+                      </div>
 
-                            {/* Quick Stats */}
-                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                              <div className="grid grid-cols-2 gap-4 text-center">
-                                <div>
-                                  <p className="text-lg font-bold text-blue-600">{student.average_score}</p>
-                                  <p className="text-xs text-gray-500">Rata-rata</p>
-                                </div>
-                                <div>
-                                  <p className="text-lg font-bold text-green-600">{student.attendance_percentage}%</p>
-                                  <p className="text-xs text-gray-500">Kehadiran</p>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    </div>
-                  ))}
+                      {/* Info Utama */}
+                      <div className="mt-1">
+                        <h3 className="text-lg font-bold text-gray-900">{student.name}</h3>
+                        <p className="text-sm text-gray-500">ID: {student.id}</p>
+                      </div>
+
+                      {/* Status Badge */}
+                      <Badge variant="outline" className="border-green-200 bg-green-50 px-2 py-0.5 text-xs text-green-700">
+                        <UserCheck className="mr-1 h-3 w-3" />
+                        Aktif
+                      </Badge>
+
+                      {/* Garis Pemisah */}
+                      <div className="my-2 w-full border-t border-gray-200"></div>
+
+                      {/* Statistik */}
+                      <div className="flex w-full items-center justify-around gap-4">
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-indigo-600">{student.average_score}</p>
+                          <p className="text-xs uppercase tracking-wider text-gray-500">Rata-rata</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-green-600">{student.attendance_percentage}%</p>
+                          <p className="text-xs uppercase tracking-wider text-gray-500">Kehadiran</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            {/* Summary Footer */}
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="text-sm text-gray-600">
+                  Menampilkan <span className="font-semibold text-gray-900">{filteredStudents.length}</span> dari{' '}
+                  <span className="font-semibold text-gray-900">{data.students.length}</span> siswa
                 </div>
-
-                {/* Pagination Info */}
-                <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Menampilkan <span className="font-medium">{filteredStudents.length}</span> dari{' '}
-                    <span className="font-medium">{data.students.length}</span> siswa
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" disabled>
-                      Sebelumnya
-                    </Button>
-                    <Button variant="outline" size="sm" disabled>
-                      Selanjutnya
-                    </Button>
-                  </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" disabled className="text-xs sm:text-sm">
+                    Sebelumnya
+                  </Button>
+                  <Button variant="outline" size="sm" disabled className="text-xs sm:text-sm">
+                    Selanjutnya
+                  </Button>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-16">
-                {searchTerm ? (
+            </div>
+          </>
+        ) : (
+          <div className="bg-white rounded-xl p-8 sm:p-12 shadow-sm">
+            <div className="text-center">
+              {searchTerm ? (
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                    <Search className="h-8 w-8 text-gray-400" />
+                  </div>
                   <div>
-                    <Search className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       Tidak ada siswa ditemukan
-                    </p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">
-                      Coba ubah kata kunci pencarian Anda
+                    </h3>
+                    <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                      Coba ubah kata kunci pencarian untuk menemukan siswa yang Anda cari
                     </p>
                     <Button 
                       variant="outline" 
-                      onClick={() => setSearchTerm("")}
-                      className="border-indigo-200 hover:bg-indigo-50 dark:border-indigo-700 dark:hover:bg-indigo-950"
+                      onClick={clearSearch}
+                      className="border-indigo-200 hover:bg-indigo-50 text-indigo-700"
                     >
-                      Hapus Filter
+                      Hapus Pencarian
                     </Button>
                   </div>
-                ) : (
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                    <Users className="h-8 w-8 text-gray-400" />
+                  </div>
                   <div>
-                    <Users className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">
-                      Belum ada siswa di kelas perwalian Anda
-                    </p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500">
-                      Hubungi administrator untuk menambahkan siswa ke kelas ini.
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Belum ada siswa
+                    </h3>
+                    <p className="text-gray-500 max-w-sm mx-auto">
+                      Belum ada siswa di kelas perwalian Anda. Hubungi administrator untuk menambahkan siswa.
                     </p>
                   </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

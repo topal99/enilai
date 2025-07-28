@@ -249,10 +249,10 @@ class TeacherController extends Controller
             ->where('teacher_id', $teacher->id)
             ->where('semester_id', $activeSemesterId);
         
-        $query->when($request->filled('class_id'), function ($q) use ($request) { /* ... */ });
-        $query->when($request->filled('subject_id'), function ($q) use ($request) { /* ... */ });
-        $query->when($request->filled('grade_type_id'), function ($q) use ($request) { /* ... */ });
-        $query->when($request->filled('exam_date'), function ($q) use ($request) { /* ... */ });
+        // $query->when($request->filled('class_id'), function ($q) use ($request) { /* ... */ });
+        // $query->when($request->filled('subject_id'), function ($q) use ($request) { /* ... */ });
+        // $query->when($request->filled('grade_type_id'), function ($q) use ($request) { /* ... */ });
+        // $query->when($request->filled('exam_date'), function ($q) use ($request) { /* ... */ });
 
         $grades = $query->latest('exam_date')->get();
 
