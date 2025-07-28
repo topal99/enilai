@@ -29,6 +29,8 @@ import Link from "next/link";
 interface Student {
   id: number;
   name: string;
+  average_score: number;
+  attendance_percentage: number;
 }
 interface ReportPageData {
   class_name: string;
@@ -131,74 +133,8 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800 shadow-lg">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                <UserCheck className="h-5 w-5" />
-                Total Siswa
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{data.students.length}</p>
-              <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">Siswa aktif</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800 shadow-lg">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
-                <TrendingUp className="h-5 w-5" />
-                Rata-rata Kelas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400">85.2</p>
-              <p className="text-sm text-green-600 dark:text-green-400 mt-1">Performa baik</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800 shadow-lg">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
-                <BookOpen className="h-5 w-5" />
-                Mata Pelajaran
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">12</p>
-              <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">Pelajaran aktif</p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Main Content */}
         <Card className="shadow-xl border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 rounded-t-lg">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 text-xl md:text-2xl">
-                  <GraduationCap className="h-6 w-6" />
-                  Daftar Siswa Kelas {data.class_name}
-                </CardTitle>
-                <CardDescription className="text-indigo-600 dark:text-indigo-400">
-                  Pilih siswa untuk melihat detail rapor akademik dan membuat catatan AI
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="border-indigo-200 hover:bg-indigo-50 dark:border-indigo-700 dark:hover:bg-indigo-950">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filter
-                </Button>
-                <Button variant="outline" size="sm" className="border-green-200 hover:bg-green-50 dark:border-green-700 dark:hover:bg-green-950">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          
           <CardContent className="p-6">
             {/* Search Bar */}
             <div className="relative mb-6">
@@ -270,12 +206,12 @@ export default function ReportPage() {
                             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                               <div className="grid grid-cols-2 gap-4 text-center">
                                 <div>
-                                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">8.5</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Rata-rata</p>
+                                  <p className="text-lg font-bold text-blue-600">{student.average_score}</p>
+                                  <p className="text-xs text-gray-500">Rata-rata</p>
                                 </div>
                                 <div>
-                                  <p className="text-lg font-bold text-green-600 dark:text-green-400">95%</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Kehadiran</p>
+                                  <p className="text-lg font-bold text-green-600">{student.attendance_percentage}%</p>
+                                  <p className="text-xs text-gray-500">Kehadiran</p>
                                 </div>
                               </div>
                             </div>
@@ -337,80 +273,6 @@ export default function ReportPage() {
           </CardContent>
         </Card>
 
-        {/* Additional Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-lg border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 rounded-t-lg">
-              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
-                <TrendingUp className="h-5 w-5" />
-                Analisis Kinerja Kelas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Rata-rata Keseluruhan</span>
-                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                    85.2 - Baik
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Tingkat Kehadiran</span>
-                  <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    94.5% - Excellent
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Siswa Berprestasi</span>
-                  <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                    {Math.round(data.students.length * 0.25)} siswa
-                  </Badge>
-                </div>
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-4 border-green-200 hover:bg-green-50 dark:border-green-700 dark:hover:bg-green-950"
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Lihat Analisis Lengkap
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-t-lg">
-              <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
-                <FileText className="h-5 w-5" />
-                Laporan & Export
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start border-blue-200 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Rapor PDF
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start border-green-200 hover:bg-green-50 dark:border-green-700 dark:hover:bg-green-950"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Data Excel
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start border-purple-200 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Cetak Semua Rapor
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );

@@ -53,7 +53,7 @@ interface AttendanceSummary {
   alpa: number;
 }
 interface Report {
-  student: { id: number; name: string };
+  student: { id: number; name: string , average_score: string};
   class: string;
   semester: string;
   report_data: ReportData;
@@ -139,6 +139,11 @@ export default function StudentReportPage() {
 
   const attendanceRate = totalAttendance > 0 ? 
     Math.round((report!.attendance_summary.hadir / totalAttendance) * 100) : 0;
+
+  const average_score = report ?
+    Object.values(report.report_data).reduce((sum, sub) => sum + sub.average, 0) / Object.keys(report.report_data).length : 0;
+
+  const subj = Object.keys(report?.report_data || {}).length;
 
   if (isLoading) {
     return (
@@ -286,47 +291,93 @@ export default function StudentReportPage() {
         </div>
 
         {/* Attendance Rate Card */}
-        <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 border-indigo-200 dark:border-indigo-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
-              <TrendingUp className="h-5 w-5" />
-              Tingkat Kehadiran
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{attendanceRate}%</p>
-                <p className="text-sm text-muted-foreground">dari {totalAttendance} hari sekolah</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 border-indigo-200 dark:border-indigo-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+                <TrendingUp className="h-5 w-5" />
+                Tingkat Kehadiran
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{attendanceRate}%</p>
+                  <p className="text-sm text-muted-foreground">dari {totalAttendance} hari sekolah</p>
+                </div>
+                <div className="w-24 h-24 relative">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="none"
+                      className="text-gray-200 dark:text-gray-700"
+                    />
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 40}`}
+                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - attendanceRate / 100)}`}
+                      className="text-indigo-600 dark:text-indigo-400"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
               </div>
-              <div className="w-24 h-24 relative">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    className="text-gray-200 dark:text-gray-700"
-                  />
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - attendanceRate / 100)}`}
-                    className="text-indigo-600 dark:text-indigo-400"
-                    strokeLinecap="round"
-                  />
-                </svg>
+            </CardContent>
+          </Card>
+
+        {/* Average Score Card */}
+          <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 border-indigo-200 dark:border-indigo-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+                <TrendingUp className="h-5 w-5" />
+                Rata-rata Nilai Keseluruhan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{average_score}</p>
+                  <p className="text-sm text-muted-foreground">dari {subj} Mapel</p>
+                </div>
+                <div className="w-24 h-24 relative">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="none"
+                      className="text-gray-200 dark:text-gray-700"
+                    />
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 40}`}
+                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - average_score / 100)}`}
+                      className="text-indigo-600 dark:text-indigo-400"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+        </div>
 
         {/* Chart Section */}
         <Card className="shadow-lg">

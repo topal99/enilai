@@ -42,6 +42,7 @@ const menuItems = [
   // Menu Wali Kelas
   { href: "/homeroom/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["walikelas"] },
   { href: "/homeroom/report", label: "Rapor Siswa", icon: FileText, roles: ["walikelas"] },
+  { href: "/homeroom/settings", label: "Pengaturan Akun", icon: Settings, roles: ["walikelas"] }, // <-- TAMBAHKAN INI
 
 ];
 

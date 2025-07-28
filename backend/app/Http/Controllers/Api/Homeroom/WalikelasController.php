@@ -13,34 +13,70 @@ use App\Models\Semester;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB; // <-- TAMBAHKAN BARIS INI
+use App\Models\StudentProfile;
 
 class WalikelasController extends Controller
 {
     public function dashboardSummary()
     {
         $homeroomTeacher = Auth::user();
+        $activeSemesterId = Setting::where('key', 'active_semester_id')->first()?->value;
 
-        // Cari kelas yang diampu oleh wali kelas ini
         $class = ClassModel::where('homeroom_teacher_id', $homeroomTeacher->id)->first();
 
-        if (!$class) {
-            // Jika wali kelas ini tidak mengampu kelas manapun
+        if (!$class || !$activeSemesterId) {
             return response()->json([
-                'class_name' => 'Tidak mengampu kelas',
+                'class_name' => $class ? ($class->level . '-' . $class->name) : 'Tidak mengampu kelas',
                 'student_count' => 0,
                 'students' => [],
+                'active_semester_name' => Semester::find($activeSemesterId)?->name,
+                'stats' => ['average_scores_by_subject' => []]
             ]);
         }
 
-        // Ambil semua murid dari kelas tersebut
+        $studentProfileIds = StudentProfile::where('class_model_id', $class->id)->pluck('id');
+        
+        $averageScoresBySubject = [];
+        if ($studentProfileIds->isNotEmpty()) {
+            // Ambil semua nilai, kelompokkan berdasarkan mapel, lalu hitung rata-ratanya
+            $averageScoresBySubject = Grade::with('subject:id,name')
+                ->whereIn('student_id', $studentProfileIds)
+                ->where('semester_id', $activeSemesterId)
+                ->get()
+                ->groupBy('subject.name')
+                ->map(function ($subjectGrades) {
+                    return round($subjectGrades->avg('score'), 2);
+                });
+        }
+        
         $students = User::whereHas('studentProfile', function ($query) use ($class) {
             $query->where('class_model_id', $class->id);
-        })->orderBy('name')->get(['id', 'name']);
+        })
+        ->orderBy('name')->get(['id', 'name']);
+        
+        $students->each(function ($student) use ($activeSemesterId) {
+            $student->average_score = Grade::where('student_id', $student->studentProfile->id)
+                ->where('semester_id', $activeSemesterId)
+                ->avg('score') ?: 0;
+
+            $attendanceSummary = $student->studentProfile->attendances()
+                ->where('semester_id', $activeSemesterId)
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')->get()->pluck('total', 'status');
+
+            $student->attendance_percentage = round(
+                ($attendanceSummary->get('hadir', 0) / ($attendanceSummary->sum() ?: 1)) * 100, 2
+            );
+        });
         
         return response()->json([
             'class_name' => $class->level . '-' . $class->name,
             'student_count' => $students->count(),
             'students' => $students,
+            'active_semester_name' => Semester::find($activeSemesterId)?->name,
+            'stats' => [
+                'average_scores_by_subject' => $averageScoresBySubject,
+            ]
         ]);
     }
 

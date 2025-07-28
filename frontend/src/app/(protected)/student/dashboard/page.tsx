@@ -5,6 +5,8 @@ import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { GraduationCap, Star, BookOpen, ArrowRight, TrendingUp, Calendar, Award } from "lucide-react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 // Definisikan tipe data
 interface Grade {
@@ -48,15 +50,25 @@ export default function StudentDashboard() {
     return "E";
   };
 
-  if (isLoading) {
+    if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto p-4 md:p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="text-gray-600 text-lg">Memuat dashboard...</span>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="container mx-auto p-4 md:p- lg:p-8 space-y-6">
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-80" />
+            <Skeleton className="h-6 w-64" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
@@ -81,7 +93,7 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto p-4 md:p-8">
         <div className="space-y-6">
           {/* Welcome Card */}
@@ -167,7 +179,21 @@ export default function StudentDashboard() {
               </div>
               <p className="text-xs text-gray-500 mt-1">semester ini</p>
             </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-600">Nilai Terendah</h3>
+                <div className="p-2 bg-red-50 rounded-lg">
+                  <Star className="h-4 w-4 text-red-600" />
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {data.recent_grades.length > 0 ? Math.min(...data.recent_grades.map(g => g.score)) : '-'}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">semester ini</p>
+            </div>
           </div>
+        
 
           {/* Recent Grades */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">

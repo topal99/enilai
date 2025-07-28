@@ -7,6 +7,8 @@ use App\Models\Grade;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\StudentProfile;
+use Illuminate\Database\Eloquent\Collection;
 
 class StudentController extends Controller
 {
@@ -45,25 +47,59 @@ class StudentController extends Controller
         ]);
     }
 
-     public function getGrades(Request $request)
+    public function getGrades(Request $request)
     {
         $studentProfile = Auth::user()->studentProfile;
         $activeSemesterId = Setting::where('key', 'active_semester_id')->first()?->value;
 
         if (!$studentProfile || !$activeSemesterId) {
-            return response()->json(['data' => []]); // Kembalikan data kosong jika ada yang tidak beres
+            return response()->json(['data' => []]);
         }
 
-        $grades = Grade::with([
+        $gradesQuery = Grade::where('student_id', $studentProfile->id)
+                            ->where('semester_id', $activeSemesterId);
+
+        $gradesQuery->when($request->filled('subject_id'), function ($q) use ($request) {
+            return $q->where('subject_id', $request->subject_id);
+        });
+
+        $stats = [
+            'total' => (clone $gradesQuery)->count(),
+            'average' => number_format((float)(clone $gradesQuery)->avg('score'), 2),
+            'highest' => (clone $gradesQuery)->max('score'),
+            'lowest' => (clone $gradesQuery)->min('score'),
+        ];
+
+        $paginatedGrades = $gradesQuery->with([
             'subject:id,name',
             'gradeType:id,name',
-            'teacher:id,name' // Ambil nama guru yang menginput nilai
-        ])
-        ->where('student_id', $studentProfile->id)
-        ->where('semester_id', $activeSemesterId)
-        ->latest('exam_date')
-        ->paginate(15); // Gunakan paginasi
+            'teacher:id,name'
+        ])->latest('exam_date')->paginate(15);
+        
+        $responseData = $paginatedGrades->toArray();
+        $responseData['stats'] = $stats;
 
-        return $grades;
+        return response()->json($responseData);
     }
+
+    public function getSubjectsWithGrades()
+    {
+        $studentProfile = Auth::user()->studentProfile;
+        $activeSemesterId = Setting::where('key', 'active_semester_id')->first()?->value;
+
+        if (!$studentProfile || !$activeSemesterId) {
+            return response()->json([]);
+        }
+
+        $subjectIds = Grade::where('student_id', $studentProfile->id)
+            ->where('semester_id', $activeSemesterId)
+            ->distinct()
+            ->pluck('subject_id');
+            
+        $subjects = \App\Models\Subject::whereIn('id', $subjectIds)->get(['id', 'name']);
+
+        return response()->json($subjects);
+    }
+
+
 }

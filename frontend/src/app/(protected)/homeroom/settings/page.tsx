@@ -24,7 +24,7 @@ const passwordSchema = z.object({
   path: ["password_confirmation"],
 });
 
-export default function TeacherSettingsPage() {
+export default function HomeroomSettingsPage() {
   const { user } = useAuth();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -54,7 +54,7 @@ export default function TeacherSettingsPage() {
     if (password.length < 8) return { strength: 25, label: "Lemah", color: "bg-red-500" };
     if (password.length < 12) return { strength: 50, label: "Sedang", color: "bg-yellow-500" };
     if (password.length < 16) return { strength: 75, label: "Kuat", color: "bg-blue-500" };
-    return { strength: 100, label: "Sangat Kuat", color: "bg-green-500" };
+    return { strength: 100, label: "Sangat Kuat", color: "bg-indigo-500" };
   };
 
   const currentPassword = passwordForm.watch("password") || "";
@@ -67,8 +67,8 @@ export default function TeacherSettingsPage() {
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Settings className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-indigo-100 rounded-lg">
+              <Settings className="h-6 w-6 text-indigo-600" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Profil & Pengaturan Akun</h1>
@@ -83,7 +83,7 @@ export default function TeacherSettingsPage() {
         <Card className="shadow-sm border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center">
                 <User className="h-8 w-8 text-white" />
               </div>
               <div className="flex-1 space-y-2">
@@ -92,8 +92,8 @@ export default function TeacherSettingsPage() {
                     {user?.name || "Nama Pengguna"}
                   </h2>
                     <Badge variant="outline" className="w-fit">
-                        <Shield className="mr-1 h-3.5 w-3.5" />
-                        Guru
+                        <UserCheck className="mr-1 h-3.5 w-3.5" />
+                        Wali Kelas
                     </Badge>
                 </div>
                 <div className="flex items-center gap-2 justify-center sm:justify-start">
@@ -102,7 +102,7 @@ export default function TeacherSettingsPage() {
                     {user?.email || "email@example.com"}
                   </p>
                 </div>
-                <p className="text-xs text-blue-600 font-medium">
+                <p className="text-xs text-indigo-600 font-medium">
                   Akun aktif dan terverifikasi
                 </p>
               </div>
@@ -194,7 +194,7 @@ export default function TeacherSettingsPage() {
                 
                 {/* Success Message */}
                 {isSuccess && (
-                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+                  <div className="flex items-center gap-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-indigo-700">
                     <CheckCircle className="h-4 w-4" />
                     <span className="text-sm font-medium">Password berhasil diubah!</span>
                   </div>
@@ -268,7 +268,7 @@ export default function TeacherSettingsPage() {
                                   />
                                 </div>
                                 <span className={`text-xs font-medium ${
-                                  passwordStrength.strength >= 75 ? 'text-green-600' : 
+                                  passwordStrength.strength >= 75 ? 'text-indigo-600' : 
                                   passwordStrength.strength >= 50 ? 'text-blue-600' :
                                   passwordStrength.strength >= 25 ? 'text-yellow-600' : 'text-red-600'
                                 }`}>
@@ -314,7 +314,7 @@ export default function TeacherSettingsPage() {
                     <Button 
                       type="submit" 
                       disabled={passwordForm.formState.isSubmitting}
-                      className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-8 py-2.5 transition-all duration-200"
+                      className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium px-8 py-2.5 transition-all duration-200"
                     >
                       {passwordForm.formState.isSubmitting ? (
                         <div className="flex items-center gap-2">
@@ -338,21 +338,21 @@ export default function TeacherSettingsPage() {
           <div className="space-y-6">
             
             {/* Security Tips */}
-            <Card className="shadow-sm bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+            <Card className="shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-blue-600" />
+                  <Shield className="h-5 w-5 text-indigo-600" />
                   <CardTitle className="text-lg">Tips Keamanan</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-3 text-sm">
                   <div className="flex gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" />
                     <span>Gunakan kombinasi huruf besar, kecil, angka, dan simbol</span>
                   </div>
                   <div className="flex gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" />
                     <span>Minimal 8 karakter, disarankan 12+ karakter</span>
                   </div>
                   <div className="flex gap-2">
@@ -373,30 +373,30 @@ export default function TeacherSettingsPage() {
                 <CardTitle className="text-lg">Status Keamanan</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-blue-500" />
+                    <CheckCircle className="h-4 w-4 text-indigo-500" />
                     <span className="text-sm font-medium">Email Terverifikasi</span>
                   </div>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                  <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">
                     Aktif
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Lock className="h-4 w-4 text-purple-500" />
+                    <Lock className="h-4 w-4 text-blue-500" />
                     <span className="text-sm font-medium">Password Terenkripsi</span>
                   </div>
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                     Aman
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-green-500" />
-                    <span className="text-sm font-medium">Akun Teacher</span>
+                    <UserCheck className="h-4 w-4 text-yellow-500" />
+                    <span className="text-sm font-medium">Akun Wali Kelas</span>
                   </div>
-                  <Badge variant="secondary" className="bg-green-100 text-green-700">
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
                     Aktif
                   </Badge>
                 </div>

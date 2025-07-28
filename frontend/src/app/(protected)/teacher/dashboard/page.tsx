@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Users, Book, Star, ClipboardEdit, GraduationCap, School, LayoutDashboard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Definisikan tipe data untuk state
 interface Subject { id: number; name: string; }
@@ -53,7 +54,31 @@ export default function TeacherDashboard() {
     fetchData();
   }, []);
 
-  if (isLoading) return <div className="p-4 sm:p-8">Memuat dasbor guru...</div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="container mx-auto p-4 md:p- lg:p-8 space-y-6">
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-80" />
+            <Skeleton className="h-6 w-64" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) return <div className="p-4 sm:p-8 text-red-500">{error}</div>;
   if (!data) return <div className="p-4 sm:p-8">Data tidak ditemukan.</div>;
 

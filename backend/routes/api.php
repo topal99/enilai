@@ -87,7 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:murid')->prefix('student')->group(function () {
         Route::get('/dashboard-summary', [StudentController::class, 'dashboardSummary']);
-        Route::get('/grades', [StudentController::class, 'getGrades']); // <-- TAMBAHKAN INI
+        Route::get('/grades', [StudentController::class, 'getGrades']);
+        Route::get('/subjects-with-grades', [StudentController::class, 'getSubjectsWithGrades']); // <-- TAMBAHKAN INI
+
     });
 
 });

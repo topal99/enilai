@@ -60,8 +60,9 @@ export default function StudentSettingsPage() {
   const currentPassword = passwordForm.watch("password") || "";
   const passwordStrength = getPasswordStrength(currentPassword);
 
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="p-4 sm:p-6 lg:p-8 mx-auto space-y-6 sm:space-y-8">
         
         {/* Header */}
@@ -80,7 +81,7 @@ export default function StudentSettingsPage() {
         </div>
 
         {/* Profile Summary Card */}
-        <Card className="shadow-sm border-0 shadow-lg bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200">
+        <Card className="shadow-sm border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
               <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center">
@@ -338,7 +339,7 @@ export default function StudentSettingsPage() {
           <div className="space-y-6">
             
             {/* Security Tips */}
-            <Card className="shadow-sm bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
+            <Card className="shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-indigo-600" />
