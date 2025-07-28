@@ -1,107 +1,207 @@
-# NilaiKu - Sistem Penilaian Murid Modern
+# NilaiKu - Sistem Penilaian Akademik
 
-Selamat datang di NilaiKu! Aplikasi ini dirancang untuk memodernisasi dan menyederhanakan proses penilaian akademik di sekolah. Dengan antarmuka yang bersih dan fitur-fitur canggih berbasis AI, NilaiKu membantu semua peran—Admin, Guru, Wali Kelas, dan Murid—untuk mengelola dan memantau kinerja akademik dengan lebih efisien.
+![](frontend/public/images/herosection.png)
 
-Aplikasi ini dibangun menggunakan **Next.js** dan **ShadCN UI**, dengan backend yang dirancang untuk diintegrasikan dengan **Laravel**.
+NilaiKu adalah sebuah aplikasi modern yang dirancang untuk menyederhanakan dan memodernisasi proses penilaian akademik di institusi pendidikan. Dibangun dengan teknologi terkini, NilaiKu menyediakan platform yang intuitif dan powerful bagi seluruh ekosistem sekolah: Admin, Guru, Wali Kelas, dan Murid.
 
-## Ringkasan Fitur per Peran
+## Teknologi yang Digunakan
 
-Berikut adalah rincian fitur yang tersedia untuk setiap peran dalam aplikasi.
+Aplikasi ini dikembangkan menggunakan arsitektur **monolitik** dengan pemisahan logis antara Frontend dan Backend:
+
+-   **Frontend:** Dibangun dengan **Next.js**, sebuah *framework* React yang *powerful* untuk membuat aplikasi web *full-stack*. Antarmuka pengguna diperkaya dengan komponen-komponen dari **ShadCN UI** dan styling menggunakan **Tailwind CSS**.
+    -   Versi Next.js: `14.x.x`
+    -   Versi React: `18.x.x`
+    -   Versi Node.js: `18.x.x` atau lebih tinggi
+
+-   **Backend:** Dibangun dengan **Laravel**, *framework* PHP yang tangguh untuk pengembangan aplikasi web. Laravel menyediakan API yang aman dan efisien untuk mendukung fungsionalitas Frontend.
+    -   Versi Laravel: `10.x.x`
+    -   Versi PHP: `8.1.x` atau lebih tinggi
+    -   Database: Direkomendasikan menggunakan **MySQL** atau **PostgreSQL**.
+
+## Instalasi Proyek
+
+Ikuti langkah-langkah di bawah ini untuk menginstal dan menjalankan proyek NilaiKu di lingkungan lokal Anda.
+
+### Prerequisites
+
+Pastikan Anda telah menginstal perangkat lunak berikut:
+
+-   Node.js (`18.x` atau lebih tinggi) & npm/yarn
+-   PHP (`8.1` atau lebih tinggi)
+-   Composer
+-   Server Basis Data (MySQL atau PostgreSQL)
+-   Server Web (Apache, Nginx, atau PHP built-in server)
+
+### Langkah-langkah Instalasi Backend (Laravel)
+
+1.  Masuk ke direktori backend:
+    ```bash
+    cd backend
+    ```
+
+2.  Instal dependensi PHP menggunakan Composer:
+    ```bash
+    composer install
+    ```
+
+3.  Salin file environment:
+    ```bash
+    cp .env.example .env
+    ```
+
+4.  Edit file `.env` dan konfigurasi koneksi database Anda.
+
+5.  Buat *application key*:
+    ```bash
+    php artisan key:generate
+    ```
+
+6.  Jalankan migrasi database:
+    ```bash
+    php artisan migrate
+    ```
+
+7.  (Opsional) Jalankan seeder untuk data dummy:
+    ```bash
+    php artisan db:seed
+    ```
+
+8.  Jalankan server Laravel (untuk pengembangan):
+    ```bash
+    php artisan serve
+    ```
+
+    Backend akan berjalan di `http://127.0.0.1:8000` secara default.
+
+### Langkah-langkah Instalasi Frontend (Next.js)
+
+1.  Masuk ke direktori frontend pada terminal baru:
+    ```bash
+    cd frontend
+    ```
+
+2.  Instal dependensi JavaScript menggunakan npm atau yarn:
+    ```bash
+    npm install
+    # atau yarn install
+    ```
+
+3.  Salin file environment:
+    ```bash
+    cp .env.local.example .env.local
+    ```
+
+4.  Edit file `.env.local` dan sesuaikan variabel lingkungan jika diperlukan (misalnya, URL backend API).
+
+5.  Jalankan server pengembangan Next.js:
+    ```bash
+    npm run dev
+    # atau yarn dev
+    ```
+
+    Frontend akan berjalan di `http://localhost:3000` secara default.
+
+Pastikan backend dan frontend berjalan secara bersamaan untuk fungsionalitas penuh.
+
+## Fitur Detail per Peran Pengguna
+
+NilaiKu dirancang dengan empat peran pengguna utama, masing-masing dengan serangkaian fitur yang disesuaikan dengan kebutuhan mereka:
 
 ---
 
-### 1. Peran: Admin
+### 1. Admin
 
-Admin memiliki kontrol penuh atas seluruh sistem, mulai dari manajemen pengguna hingga pengaturan akademik global.
+Peran Admin memiliki kendali penuh atas sistem, bertanggung jawab untuk manajemen pengguna, konfigurasi sistem, dan pemantauan aktivitas global.
 
--   **Dasbor Admin (`/admin/dashboard`)**
-    -   Menampilkan statistik kunci: Total Pengguna, Total Guru, Total Murid, dan Total Nilai yang Telah Diinput.
-    -   Visualisasi komposisi pengguna (Admin, Guru, Murid, Wali Kelas) dalam bentuk diagram lingkaran (pie chart).
-    -   Log aktivitas terbaru yang terjadi di dalam sistem untuk pemantauan cepat.
+-   **Dasbor Komprehensif (`/admin/dashboard`)**
+    -   Ringkasan statistik utama: Jumlah total pengguna, guru, siswa, dan nilai yang tercatat.
+    -   Diagram visualisasi distribusi peran pengguna dalam sistem.
+    -   Tampilan *real-time* log aktivitas terbaru untuk pengawasan.
 
--   **Manajemen Pengguna (`/admin/users`)**
-    -   Menampilkan daftar lengkap semua pengguna yang terdaftar di sistem.
-    -   Menambahkan pengguna baru (murid, guru, admin) melalui sebuah dialog form.
-    -   (Backend) Kemampuan untuk mengedit dan menghapus pengguna.
+-   **Manajemen Pengguna (`/admin/manage-admin`, `/admin/manage-teachers`, `/admin/manage-students`, `/admin/manage-homerooms`)**
+    -   Antarmuka terpisah untuk mengelola masing-masing tipe pengguna (Admin, Guru, Murid, Wali Kelas).
+    -   Menambahkan pengguna baru dengan data spesifik sesuai peran.
+    -   (Backend) Fungsionalitas lengkap untuk mengedit, menghapus, dan mengelola detail profil pengguna.
 
 -   **Monitor Aktivitas (`/admin/activity`)**
-    -   Menyediakan log audit yang terperinci dari semua aktivitas pengguna, termasuk waktu dan alamat IP.
+    -   Log audit terperinci dari setiap aksi yang dilakukan pengguna, termasuk *timestamp* dan informasi relevan.
 
--   **Pengaturan (`/admin/settings`)**
-    -   **Pengaturan Akademik**: Mengatur semester yang sedang aktif untuk seluruh aplikasi. Perubahan ini akan memengaruhi data yang ditampilkan di semua peran.
-    -   **Keamanan**: Mengubah kata sandi akun admin.
-    -   **Notifikasi**: Mengelola preferensi notifikasi (misalnya, via email atau peringatan sistem).
+-   **Pengaturan Sistem (`/admin/settings`)**
+    -   Mengatur semester yang sedang aktif untuk seluruh aplikasi.
+    -   Mengelola pengaturan global lainnya yang memengaruhi perilaku sistem.
+    -   Opsi keamanan seperti perubahan kata sandi admin.
 
--   **Profil (`/admin/profile`)**
-    -   Memperbarui informasi profil pribadi admin, seperti nama dan email.
-    -   Mengubah foto profil.
+-   **Profil Admin (`/admin/profile`)**
+    -   Mengelola informasi pribadi dan foto profil admin.
 
 ---
 
-### 2. Peran: Guru
+### 2. Guru
 
-Guru dapat fokus pada tugas utama mereka: mengajar dan menilai. Fitur-fitur yang ada dirancang untuk mempercepat proses administrasi nilai.
+Peran Guru difokuskan pada pengelolaan data nilai siswa dan memanfaatkan fitur bantuan AI untuk efisiensi.
 
 -   **Dasbor Guru (`/teacher/dashboard`)**
-    -   Menampilkan ringkasan statistik untuk semester aktif: jumlah mata pelajaran yang diajar, total murid, dan rata-rata nilai keseluruhan kelas.
-    -   Menampilkan daftar 3 murid berprestasi teratas berdasarkan nilai rata-rata.
-    -   Tautan cepat untuk langsung ke halaman input nilai.
+    -   Statistik ringkas semester aktif: Jumlah mata pelajaran yang diajar, total siswa yang dinilai, rata-rata nilai kelas.
+    -   Identifikasi dan tampilan 3 siswa dengan pencapaian akademik tertinggi.
+    -   Akses cepat ke halaman input nilai.
 
--   **Input Nilai (`/teacher/grade-input`)**
-    -   Formulir input nilai massal yang efisien.
-    -   Alur kerja: Guru memilih Kelas -> Mata Pelajaran -> Jenis Ujian -> Tanggal.
-    -   Setelah filter dipilih, tabel dinamis muncul berisi daftar semua murid di kelas tersebut, dengan kolom input nilai di samping setiap nama.
-    -   Menyimpan semua nilai untuk satu kelas dalam satu kali aksi.
+-   **Input Nilai Efisien (`/teacher/grade-input`)**
+    -   Formulir input massal yang memudahkan pengisian nilai untuk seluruh kelas sekaligus.
+    -   Filter dinamis berdasarkan Kelas, Mata Pelajaran, Jenis Nilai (Ulangan Harian, Tugas, UTS, UAS), dan Tanggal Ujian.
+    -   Setelah filter diterapkan, tabel menampilkan daftar siswa dengan kolom input nilai yang dapat langsung diisi.
+    -   Proses penyimpanan nilai yang disederhanakan.
 
--   **Daftar Nilai (`/teacher/grades`)**
-    -   Menampilkan tabel lengkap dari semua nilai yang pernah diinput oleh guru tersebut untuk semester aktif.
-    -   Fitur filter interaktif berdasarkan Kelas, Mata Pelajaran, dan Jenis Ujian untuk memudahkan pencarian data spesifik.
+-   **Daftar Nilai Terorganisir (`/teacher/grades`)**
+    -   Tabel komprehensif yang menampilkan semua nilai yang telah diinput oleh guru tersebut.
+    -   Fitur filter berdasarkan Kelas, Mata Pelajaran, dan Jenis Nilai untuk pencarian data yang cepat dan akurat.
 
--   **Rekomendasi AI (`/teacher/recommendation`)**
-    -   Fitur canggih untuk mendapatkan rekomendasi penilaian.
-    -   Guru mengunggah file tugas murid dan memasukkan kriteria penilaian.
-    -   AI akan menganalisis file dan memberikan rekomendasi nilai beserta alasannya dalam bentuk poin-poin.
+-   **Rekomendasi Penilaian Berbasis AI (`/teacher/recommendation`)**
+    -   Unggah dokumen tugas atau hasil kerja siswa.
+    -   Masukkan kriteria penilaian yang relevan.
+    -   Sistem AI akan menganalisis dokumen dan memberikan rekomendasi nilai beserta penjelasan poin per poin sebagai dasar pertimbangan guru.
 
--   **Profil & Pengaturan (`/teacher/profile`, `/teacher/settings`)**
-    -   Mengelola informasi profil pribadi dan mengubah kata sandi.
+-   **Profil & Pengaturan Guru (`/teacher/profile`, `/teacher/settings`)**
+    -   Mengelola detail profil pribadi dan opsi perubahan kata sandi.
 
 ---
 
-### 3. Peran: Wali Kelas (Homeroom)
+### 3. Wali Kelas (Homeroom)
 
-Wali Kelas memiliki akses untuk memantau perkembangan akademik seluruh siswa di kelas perwaliannya dan bertanggung jawab atas pembuatan rapor.
+Wali Kelas berperan dalam memantau perkembangan akademik siswa di kelas perwaliannya dan bertanggung jawab dalam pembuatan serta pengelolaan rapor.
 
 -   **Dasbor Wali Kelas (`/homeroom/dashboard`)**
-    -   Menampilkan ringkasan jumlah siswa dan mata pelajaran di sekolah.
-    -   Tautan cepat untuk langsung menuju halaman rapor siswa.
+    -   Informasi jumlah siswa di kelas perwalian dan mata pelajaran yang diambil.
+    -   Akses langsung ke halaman laporan/rapor siswa.
 
--   **Rapor Siswa (`/homeroom/report`)**
-    -   Halaman utama untuk memantau dan membuat rapor.
-    -   Wali kelas memilih siswa dari daftar untuk melihat detail nilai mereka.
-    -   Menampilkan rekapitulasi nilai lengkap siswa per mata pelajaran (ulangan harian, tugas, UTS, UAS) dan nilai rata-ratanya.
-    -   Visualisasi nilai siswa dalam bentuk diagram batang (bar chart).
-    -   **Fitur AI**: Kemampuan untuk menghasilkan catatan/komentar rapor secara otomatis berdasarkan data nilai siswa. AI akan memberikan ringkasan, daftar kekuatan, area peningkatan, dan rekomendasi.
+-   **Manajemen Rapor Siswa (`/homeroom/report`, `/homeroom/report/[studentId]`)**
+    -   Daftar siswa di kelas perwalian untuk pemilihan dan peninjauan rapor.
+    -   Tampilan detail nilai siswa per mata pelajaran, mencakup semua jenis penilaian.
+    -   Visualisasi nilai siswa dalam bentuk grafik (misalnya, diagram batang) untuk analisis cepat.
+    -   **Fitur Pembuatan Catatan Rapor AI**: Menghasilkan draf catatan atau komentar rapor secara otomatis berdasarkan performa akademik siswa (kekuatan, area pengembangan, saran).
 
--   **Profil & Pengaturan (`/homeroom/profile`, `/homeroom/settings`)**
-    -   Mengelola informasi profil pribadi dan mengubah kata sandi.
+-   **Profil & Pengaturan Wali Kelas (`/homeroom/profile`, `/homeroom/settings`)**
+    -   Mengelola informasi profil dan opsi perubahan kata sandi.
 
 ---
 
-### 4. Peran: Murid
+### 4. Murid
 
-Murid dapat dengan mudah memantau kemajuan akademik mereka sendiri.
+Peran Murid memungkinkan siswa untuk secara aktif memantau dan melacak kemajuan akademik mereka sendiri.
 
 -   **Dasbor Murid (`/student/dashboard`)**
-    -   Menampilkan kartu selamat datang dengan informasi kelas dan semester aktif.
-    -   Menampilkan daftar 3 nilai terbaru yang diperoleh.
-    -   Menampilkan kartu berisi nilai rata-rata dari semua mata pelajaran di semester ini.
-    -   Tautan cepat untuk melihat semua nilai.
+    -   Sambutuan personal dengan informasi kelas dan semester aktif.
+    -   Tampilan singkat 3 nilai terbaru yang diperoleh.
+    -   Kartu ringkasan nilai rata-rata semester.
+    -   Tautan cepat untuk melihat semua detail nilai.
 
--   **Nilai Saya (`/student/grades`)**
-    -   Menampilkan daftar lengkap semua nilai yang diperoleh di semester aktif dalam format tabel yang rapi.
-    -   Informasi mencakup mata pelajaran, nama guru, jenis ujian, tanggal, dan skor yang didapat.
+-   **Akses Nilai (`/student/grades`)**
+    -   Tabel yang rapi dan mudah dibaca berisi semua nilai yang diperoleh siswa pada semester aktif.
+    -   Informasi mencakup Nama Mata Pelajaran, Nama Guru, Jenis Penilaian, Tanggal Ujian, dan Skor yang didapat.
 
--   **Profil & Pengaturan (`/student/profile`, `/student/settings`)**
-    -   Halaman profil menampilkan informasi akun (nama, email, peran) yang tidak dapat diubah.
-    -   Menyediakan formulir khusus bagi murid untuk mengubah kata sandi akun mereka.
+-   **Profil & Pengaturan Murid (`/student/profile`, `/student/settings`)**
+    -   Halaman profil menampilkan informasi dasar yang tidak dapat diubah (nama, email, peran).
+    -   Formulir khusus untuk mengubah kata sandi akun.
+
 ---
+
+NilaiKu bertujuan untuk menjadi solusi komprehensif dalam digitalisasi proses penilaian, meningkatkan transparansi, dan mendukung kolaborasi antara seluruh komponen sekolah demi kemajuan akademik siswa.
